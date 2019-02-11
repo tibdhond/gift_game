@@ -1,0 +1,24 @@
+extends layout
+
+block content
+    .container
+        h3 Ga naar 10.0.0.221:3000 om te beginnen
+        .row.row-marg
+            each person in persons
+                .col-sm-4
+                    .card.card-shadow.card-marg
+                        .card-body.text-center
+                            i.material-icons.md-icon-48 person
+                            h5.card-title #{person.name}
+                            form(method='POST' action='/people/delete/people')
+                                button.btn.btn-danger(type='submit' style="float:right", name="person", value=person) Verwijder
+            else
+                p Er zijn nog geen mensen.
+
+        form(method='GET' action='/gift')
+            button.btn.btn-primary(type='submit' style="float:right") Start spel
+
+    script.
+        setTimeout(function(){
+            window.location.reload(1);
+        }, 5000);

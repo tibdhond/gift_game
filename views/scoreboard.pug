@@ -1,0 +1,23 @@
+extends layout
+
+block content
+    .container
+            h1(style="color:black")= "Uitslag"
+            .row.row-marg
+                each vote, person in votes
+                    .col-sm-4
+                        .card.card-shadow.card-marg
+                            .card-body.text-center
+                                h5.card-title #{person}
+                                .progress
+                                    .progress-bar(role='progressbar' aria-valuenow=votes aria-valuemin=0 aria-valuemax=length style='width:'+Math.floor(vote * 100 / length)+"%")
+                                        | #{Math.floor(vote * 100 / length)+"%"}
+                                br
+                                .col-sm-4
+                                form(method='POST' action='/people/juist')
+                                    button.btn.btn-primary(type='submit' style="float:right", name="person", value=person) Juist
+                                .col-sm-4
+                                form(method='POST' action='/people/delete/scoreboard')
+                                    button.btn.btn-danger(type='submit' style="float:right", name="person", value=person) Verwijder
+            form(method='GET' action='/gift')
+                button.btn.btn-primary(type='submit' style="float:right") Volgende cadeau

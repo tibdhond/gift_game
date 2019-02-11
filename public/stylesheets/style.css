@@ -1,0 +1,108 @@
+body {
+  font-family: 'Lato', sans-serif;
+  background-size: cover;
+  margin-top: 70px;
+}
+
+a {
+  color: #00B7FF;
+}
+
+
+.card {
+    border-radius: 6px;
+}
+.card-shadow {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+.card-marg {
+    margin-bottom: 30px;
+}
+
+.bg-grey {
+  background: #3b3a36;
+}
+
+.nav-shadow {
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.30);
+}
+
+.nav-bg {
+  /*background: #00897b;*/
+}
+
+.container-shadow {
+  box-shadow: 0 2px 5px 0 rgba(0,0,0,0.30);
+  background: white;
+  top: 50%;
+}
+
+.material-icons.md-18 {
+  display: inline-flex;
+  vertical-align: bottom;
+}
+
+.container {
+    /*margin-top: 70px;*/
+}
+
+.card-container {
+    padding-top: 5%;
+}
+
+.field {
+    display: flex;
+    flex-flow: column-reverse;
+}
+label {
+    color: grey;
+    font-size: 12px;
+}
+
+label, input {
+    transition: all 0.2s;
+}
+
+input:placeholder-shown + label,
+textarea:placeholder-shown + label{
+    max-width: 66.66%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* |2] */
+    cursor: text;
+    /* [3 */
+    transform-origin: left bottom;
+    transform: translate(1rem, 2.350rem);
+    font-size: 15px;
+}
+
+input:not(:placeholder-shown) + label,
+textarea:not(:placeholder-shown) + label,
+input:focus + label,
+textarea:focus + label{
+    transform: translate(0, 0);
+    cursor: pointer;
+    font-size: 12px;
+}
+
+h2 {
+    font-weight: 700;
+}
+
+.md-icon-48 {
+    font-size: 80px;
+    vertical-align: text-bottom;
+}
+
+.btn-create {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
