@@ -3,11 +3,11 @@ let people = {};
 let votes = {};
 let voted = 0;
 let gifts = [];
-let gift = undefined;
 let complete = false;
-let round = 0;
+let round = -1;
 let error = "";
 let server = false;
+let rounds = [];
 
 class Gift {
     constructor(description) {
@@ -23,9 +23,10 @@ class Gift {
 class Player {
     constructor(name) {
         this.name = name;
-        this.round = 0;
+        this.round = -1;
         this.playing = true;
         this.notcurrent = true;
+        this.rounds = [];
     }
 }
 
@@ -58,7 +59,7 @@ exports.newPerson = function (req, res) {
 
 exports.person_list = function (req, res) {
     if(!server) {
-        res.cookie("server", true, {maxAge : 24 * 3600000}).render("persons.pug", {persons: people})
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("persons.pug", {persons: people});
         server = true;
     }
     else if("server" in req.cookies) {
@@ -77,17 +78,17 @@ exports.person_delete = function(req, res) {
 
 exports.next_gift = function (req, res) {
 
-    if(gift !== undefined) {
-        gifts.push(gift);
-        gift = undefined;
+    if(gifts.length === round+1) {
+        gifts.push(rounds[round]);
+        rounds.pop();
     }
 
     let next = undefined;
     if (complete) {
         let z = (2 / (gifts.length - 1)) / gifts.length;
         let index = gifts.length - 1 - (Math.floor(1/2 + Math.sqrt(8 * Math.random() + z) / (2*Math.sqrt(z))));
-        gift = gifts[index];
-        next = gift;
+        rounds.push(gifts[index]);
+        next = rounds[round];
         gifts.splice(index, 1);
     }
     console.log(gifts);
@@ -97,7 +98,7 @@ exports.next_gift = function (req, res) {
 
 exports.new_gift = function (req, res) {
     complete = req.body.rTrue !== undefined;
-    gift = new Gift(req.body.gift);
+    rounds.push(new Gift(req.body.gift));
 
     voted = 0;
 
@@ -152,7 +153,7 @@ exports.reset = function (req, res) {
 
 exports.host_wait = function (req, res) {
     if(voted === Object.keys(people).length) {
-        if (gift.owner === undefined && error === "") {
+        if (rounds[round].owner === undefined && error === "") {
             error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
         }
 
@@ -168,7 +169,7 @@ exports.host_wait = function (req, res) {
             voted: voted,
             length: Object.keys(people).length,
             ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
-            gift: gift.description
+            gift: rounds[round].description
         });
     }
 };
@@ -210,7 +211,7 @@ exports.vote_get = function (req, res) {
         }
         else {
             people[req.cookies["id"]].notcurrent = false;
-            res.render("vote_screen", {persons: people, id: req.params.id, gift: gift.description});
+            res.render("vote_screen", {persons: people, id: req.params.id, gift: rounds[round].description});
             people[req.cookies["id"]].notcurrent = true;
         }
     }
@@ -231,12 +232,12 @@ exports.vote_post = function (req, res) {
         }
         else {
             if (req.body.person.toString() === "mine") {
-                if(gift.owner !== undefined && gift.owner !== req.cookies["id"]) {
+                if(rounds[round].owner !== undefined && rounds[round].owner !== req.cookies["id"]) {
                     error = "Meerdere mensen hebben het cadeau opgeëist, de ronde begint opnieuw.";
-                    gift.owner = undefined;
+                    rounds[round].owner = undefined;
                 }
                 else {
-                    gift.setOwner(req.cookies["id"]);
+                    rounds[round].setOwner(req.cookies["id"]);
                     votes[req.cookies["id"]] += 1;
                 }
             }
@@ -266,7 +267,6 @@ exports.nocache = function(req, res, next) {
 exports.has_gift = function (req, res) {
     people[req.body.person].playing = false;
     console.log(votes);
-    gift = undefined;
     res.redirect("/gift")
 };
 
