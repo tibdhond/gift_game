@@ -7,6 +7,7 @@ let gift = undefined;
 let complete = false;
 let round = 0;
 let error = "";
+let server = false;
 
 class Gift {
     constructor(description) {
@@ -48,7 +49,7 @@ exports.newPerson = function (req, res) {
     if (!(req.body.Name.toString() in people)) {
         people[req.body.Name.toString()] = new Player(req.body.Name.toString());
         votes[req.body.Name.toString()] = 0;
-        res.cookie("id", req.body.Name.toString(), {maxAge : 2 * 24 * 3600000}).redirect("/waiting_room"); // 2 days
+        res.cookie("id", req.body.Name.toString(), {maxAge : 24 * 3600000}).redirect("/waiting_room"); // 2 days
     }
     else {
         res.render("login.pug", {taken: true, nick: req.body.Name.toString()})
@@ -56,7 +57,15 @@ exports.newPerson = function (req, res) {
 };
 
 exports.person_list = function (req, res) {
-   res.render("persons.pug", {persons: people});
+    if(!server) {
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("persons.pug", {persons: people})
+    }
+    else if("server" in req.cookies) {
+        res.render("persons.pug", {persons: people})
+    }
+    else {
+        res.redirect("/");
+    }
 };
 
 exports.person_delete = function(req, res) {
@@ -150,8 +159,6 @@ exports.host_wait = function (req, res) {
             res.redirect("/invalid");
         }
         else {
-            gifts.push(gift);
-            gift = undefined;
             res.redirect("/scoreboard");
         }
     }
@@ -258,6 +265,7 @@ exports.nocache = function(req, res, next) {
 exports.has_gift = function (req, res) {
     people[req.body.person].playing = false;
     console.log(votes);
+    gift = undefined;
     res.redirect("/gift")
 };
 
