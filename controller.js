@@ -59,6 +59,7 @@ exports.newPerson = function (req, res) {
 exports.person_list = function (req, res) {
     if(!server) {
         res.cookie("server", true, {maxAge : 24 * 3600000}).render("persons.pug", {persons: people})
+        server = true;
     }
     else if("server" in req.cookies) {
         res.render("persons.pug", {persons: people})
