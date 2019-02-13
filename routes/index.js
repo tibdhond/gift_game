@@ -1,7 +1,7 @@
 let express = require('express');
 let ws = require('express-ws');
 let router = express.Router();
-controller = require('../controller.js');
+controller = require('../controllers/controller.js');
 
 /* GET home page. */
 router.get('/', controller.home);
@@ -19,4 +19,5 @@ router.get('/vote', controller.nocache, controller.vote_get);
 router.post('/vote', controller.vote_post);
 router.post('/reset', controller.reset);
 router.get('/invalid', controller.invalid);
+router.get('/host_result', controller.host_result);
 module.exports = router;

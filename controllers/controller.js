@@ -27,6 +27,7 @@ class Player {
         this.playing = true;
         this.notcurrent = true;
         this.rounds = [];
+        this.right = 0;
     }
 }
 
@@ -218,33 +219,48 @@ exports.vote_get = function (req, res) {
 };
 
 exports.vote_post = function (req, res) {
-    if(!("id" in req.cookies)) {
+    if(!("id" in req.cookies)) {        // Person has not logged in yet
         res.redirect("/login");
     }
-    else {
-        if (!(req.cookies["id"] in people)) {
+    else {      // Person has logged in
+        if (!(req.cookies["id"] in people)) {   // Person has logged in but server forgot
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
             votes[req.cookies["id"]] = 0;
         }
-        if (people[req.cookies["id"]].round >= round) {
+        if (people[req.cookies["id"]].round >= round) {     // Person is not allowed to vote (yet)
             people[req.cookies["id"]].round = round;
             res.redirect("/waiting_room");
         }
-        else {
-            if (req.body.person.toString() === "mine") {
-                if(rounds[round].owner !== undefined && rounds[round].owner !== req.cookies["id"]) {
+        else {      // Person is allowed to vote
+            if (req.body.person.toString() === "mine") {        // Person has claimed the gift
+                if(rounds[round].owner !== undefined && rounds[round].owner !== req.cookies["id"]) {    // gift already claimed
                     error = "Meerdere mensen hebben het cadeau opgeëist, de ronde begint opnieuw.";
+                    // Errors can only be handled at the end of the round
                     rounds[round].owner = undefined;
                 }
-                else {
+                else {  // gift claimed successfully
                     rounds[round].setOwner(req.cookies["id"]);
                     votes[req.cookies["id"]] += 1;
+                    if(people[req.cookies["id"]].rounds.length === round+1) {
+                        // last round was invalid and has restarted; existing gift may be invalid
+                        people[req.cookies["id"]].rounds[round] = req.body.person;
+                    }
+                    else {  // no problems
+                        people[req.cookies["id"]].rounds.push(req.body.person);
+                    }
                 }
             }
-            else if (req.body.person in votes) {
+            else if (req.body.person in votes) {    // successful vote
                 votes[req.body.person] += 1;
+                if(people[req.cookies["id"]].rounds.length === round+1) {
+                    // last round was invalid and has restarted; existing gift may be invalid
+                    people[req.cookies["id"]].rounds[round] = req.body.person;
+                }
+                else {  // no problems
+                    people[req.cookies["id"]].rounds.push(req.body.person);
+                }
             }
-            else {
+            else {  // person not found, should not happen
                 console.log(votes);
                 console.log(req.body.person.toString());
                 console.log(typeof req.body.person.toString());
@@ -272,4 +288,32 @@ exports.has_gift = function (req, res) {
 
 exports.invalid = function (req, res) {
     res.render("Invalid_round", {error: error})
+};
+
+exports.host_result = function(req, res) {
+
+    // testing
+    for (let i=0; i < 10; i++) {
+        people["person"+i] = new Player("person"+i);
+        people["person"+i].right = Math.floor(Math.random() * 50)
+    }
+
+    console.log(people);
+
+    /*
+    for(let i=0; i < rounds.length; i++) {
+        for (let person_key in people) {
+            if (people.hasOwnProperty(person_key) && person_key !== undefined) {
+                let person = people[person_key];
+                if (person.rounds[i] === rounds[i].owner) {
+                    people[person_key].right++;
+                }
+            }
+        }
+    }*/
+    res.render("result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
+};
+
+exports.client_result = function(req, res) {
+    res.render("", {rounds: rounds, person: people[req.cookies["id"]]});
 };
