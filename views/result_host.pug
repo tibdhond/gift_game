@@ -2,6 +2,7 @@ extends layout
 
 block content
     .container
+        h1(style="color:black")= "Einduitslag"
         canvas#barChart
 
 block script
@@ -33,7 +34,7 @@ block script
             data: {
                 labels: names,
                 datasets: [{
-                    label: '# of Votes',
+                    label: '# juiste antwoorden',
                     data: votes,
                     backgroundColor: colors1,
                     borderColor: colors2,

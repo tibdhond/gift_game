@@ -78,23 +78,27 @@ exports.person_delete = function(req, res) {
 };
 
 exports.next_gift = function (req, res) {
-
-    if(gifts.length === round+1) {
-        gifts.push(rounds[round]);
-        rounds.pop();
+    if (complete && rounds.length < round+1) { // All gifts are known
+        if(gifts.length > 0) {  // Pick a random gift
+            let index = 0;
+            if (gifts.length > 1) {
+                let z = (2 / (gifts.length - 1)) / gifts.length;    // Custom distribution where smaller numbers have higher chance
+                index = gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
+            }
+            rounds.push(gifts[index]);  // Set gift to be used in current round
+            gifts.splice(index, 1); // Presents in use are removed from list
+            res.render("next.pug", {gift: rounds[round].description.toString(), complete: complete});
+        }
+        else {  // Game has ended
+            res.redirect("/host_result");
+        }
     }
-
-    let next = undefined;
-    if (complete) {
-        let z = (2 / (gifts.length - 1)) / gifts.length;
-        let index = gifts.length - 1 - (Math.floor(1/2 + Math.sqrt(8 * Math.random() + z) / (2*Math.sqrt(z))));
-        rounds.push(gifts[index]);
-        next = rounds[round];
-        gifts.splice(index, 1);
+    else {  // Should only be called on a refresh (gift already selected)
+        res.render("next.pug", {
+            gift: rounds.length === round + 1 ? rounds[round].description.toString() : "",
+            complete: complete
+        });
     }
-    console.log(gifts);
-    res.render("next.pug", {gift: next !== undefined ? next.description.toString() : "", complete: complete});
-
 };
 
 exports.new_gift = function (req, res) {
@@ -162,6 +166,7 @@ exports.host_wait = function (req, res) {
             res.redirect("/invalid");
         }
         else {
+            gifts.push(rounds[round]);
             res.redirect("/scoreboard");
         }
     }
@@ -282,7 +287,7 @@ exports.nocache = function(req, res, next) {
 
 exports.has_gift = function (req, res) {
     people[req.body.person].playing = false;
-    console.log(votes);
+    gifts.pop();
     res.redirect("/gift")
 };
 
