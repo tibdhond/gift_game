@@ -1628,7 +1628,6 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 0; }
   .divider-new:before, .divider-new:after {
     content: "";
-    height: 1.5px;
     -webkit-box-flex: 1;
     -webkit-flex: 1;
     -ms-flex: 1;
@@ -1787,40 +1786,40 @@ a.text-light:hover, a.text-light:focus {
   transform: scale(1.1); }
 
 .pattern-1 {
-  background: url("../img/overlays/01.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/01.png") fixed;
+}
 
 .pattern-2 {
-  background: url("../img/overlays/02.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/02.png") fixed;
+}
 
 .pattern-3 {
-  background: url("../img/overlays/03.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/03.png") fixed;
+}
 
 .pattern-4 {
-  background: url("../img/overlays/04.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/04.png") fixed;
+}
 
 .pattern-5 {
-  background: url("../img/overlays/05.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/05.png") fixed;
+}
 
 .pattern-6 {
-  background: url("../img/overlays/06.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/06.png") fixed;
+}
 
 .pattern-7 {
-  background: url("../img/overlays/07.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/07.png") fixed;
+}
 
 .pattern-8 {
-  background: url("../img/overlays/08.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/08.png") fixed;
+}
 
 .pattern-9 {
-  background: url("../img/overlays/09.png");
-  background-attachment: fixed; }
+  background: url("../img/overlays/09.png") fixed;
+}
 
 /*!
  * Waves v0.7.6
