@@ -1,0 +1,17 @@
+extends ../layout
+
+block content
+    table.table.table-striped
+        thead
+            tr
+                th(scope='col') Round
+                th(scope='col') Gift
+                th(scope='col') Your answer
+                th(scope='col') Right answer
+        tbody
+            each gift, i in rounds
+                tr
+                    th(scope='row') #{i}
+                    td #{gift.description}
+                    td #{person.rounds[i]}
+                    td #{gift.owner}

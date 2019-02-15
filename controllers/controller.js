@@ -324,5 +324,5 @@ exports.host_result = function(req, res) {
 };
 
 exports.client_result = function(req, res) {
-    res.render("", {rounds: rounds, person: people[req.cookies["id"]]});
+    res.render("client_views/result_client", {rounds: rounds, person: people[req.cookies["id"]]});
 };
