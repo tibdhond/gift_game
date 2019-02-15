@@ -296,16 +296,13 @@ exports.invalid = function (req, res) {
 };
 
 exports.host_result = function(req, res) {
-
-    // testing
+    /*
+    // Uncomment for testing
     for (let i=0; i < 10; i++) {
         people["person"+i] = new Player("person"+i);
         people["person"+i].right = Math.floor(Math.random() * 50)
-    }
+    } */
 
-    console.log(people);
-
-    /*
     for(let i=0; i < rounds.length; i++) {
         for (let person_key in people) {
             if (people.hasOwnProperty(person_key) && person_key !== undefined) {
@@ -315,7 +312,7 @@ exports.host_result = function(req, res) {
                 }
             }
         }
-    }*/
+    }
     res.render("result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
 };
 
