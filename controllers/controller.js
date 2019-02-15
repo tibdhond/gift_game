@@ -61,7 +61,7 @@ exports.newPerson = function (req, res) {
 
 exports.person_list = function (req, res) {
     if(!server) {
-        res.cookie("server", true, {maxAge : 24 * 3600000}).render("persons.pug", {persons: people});
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {persons: people});
         server = true;
     }
     else if("server" in req.cookies) {
@@ -79,7 +79,11 @@ exports.person_delete = function(req, res) {
 };
 
 exports.next_gift = function (req, res) {
-    if (complete && rounds.length < round+1) { // All gifts are known
+    console.log(gifts);
+    console.log(rounds);
+    console.log(round);
+    console.log(complete);
+    if (complete && rounds.length === round+1) { // All gifts are known
         if(gifts.length > 0) {  // Pick a random gift
             let index = 0;
             if (gifts.length > 1) {
@@ -88,7 +92,7 @@ exports.next_gift = function (req, res) {
             }
             rounds.push(gifts[index]);  // Set gift to be used in current round
             gifts.splice(index, 1); // Presents in use are removed from list
-            res.render("host_viewss/next.pug", {gift: rounds[round].description.toString(), complete: complete});
+            res.render("host_views/next.pug", {gift: rounds[round+1].description.toString(), complete: complete});
         }
         else {  // Game has ended
             res.redirect("/host_result");
@@ -96,7 +100,7 @@ exports.next_gift = function (req, res) {
     }
     else {  // Should only be called on a refresh (gift already selected)
         res.render("host_views/next.pug", {
-            gift: rounds.length === round + 1 ? rounds[round].description.toString() : "",
+            gift: rounds.length === round + 1 ? "" : rounds[round].description.toString(),
             complete: complete
         });
     }

@@ -20,4 +20,5 @@ router.post('/vote', controller.vote_post);
 router.post('/reset', controller.reset);
 router.get('/invalid', controller.invalid);
 router.get('/host_result', controller.host_result);
+router.get('/client_result', controller.client_result);
 module.exports = router;

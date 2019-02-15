@@ -10,8 +10,21 @@ block content
                 th(scope='col') Right answer
         tbody
             each gift, i in rounds
-                tr
-                    th(scope='row') #{i}
-                    td #{gift.description}
-                    td #{person.rounds[i]}
-                    td #{gift.owner}
+                if person.rounds[i] === "mine"
+                    tr.bg-info
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}
+                else if person.rounds[i] === gift.owner
+                    tr.bg-success
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}
+                else
+                    tr.bg-danger
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}
