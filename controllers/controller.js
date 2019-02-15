@@ -8,6 +8,7 @@ let round = -1;
 let error = "";
 let server = false;
 let rounds = [];
+let finished = false;
 
 class Gift {
     constructor(description) {
@@ -43,7 +44,7 @@ exports.login = function (req, res) {
         res.redirect("/waiting_room");
     }
     else {
-        res.render("login.pug", {taken: false, nick: ""});
+        res.render("client_views/login.pug", {taken: false, nick: ""});
     }
 };
 
@@ -54,7 +55,7 @@ exports.newPerson = function (req, res) {
         res.cookie("id", req.body.Name.toString(), {maxAge : 24 * 3600000}).redirect("/waiting_room"); // 2 days
     }
     else {
-        res.render("login.pug", {taken: true, nick: req.body.Name.toString()})
+        res.render("client_views/login.pug", {taken: true, nick: req.body.Name.toString()})
     }
 };
 
@@ -64,7 +65,7 @@ exports.person_list = function (req, res) {
         server = true;
     }
     else if("server" in req.cookies) {
-        res.render("persons.pug", {persons: people})
+        res.render("host_views/persons.pug", {persons: people})
     }
     else {
         res.redirect("/");
@@ -87,14 +88,14 @@ exports.next_gift = function (req, res) {
             }
             rounds.push(gifts[index]);  // Set gift to be used in current round
             gifts.splice(index, 1); // Presents in use are removed from list
-            res.render("next.pug", {gift: rounds[round].description.toString(), complete: complete});
+            res.render("host_viewss/next.pug", {gift: rounds[round].description.toString(), complete: complete});
         }
         else {  // Game has ended
             res.redirect("/host_result");
         }
     }
     else {  // Should only be called on a refresh (gift already selected)
-        res.render("next.pug", {
+        res.render("host_views/next.pug", {
             gift: rounds.length === round + 1 ? rounds[round].description.toString() : "",
             complete: complete
         });
@@ -171,7 +172,7 @@ exports.host_wait = function (req, res) {
         }
     }
     else {
-        res.render("host_wait.pug", {
+        res.render("host_views/host_wait.pug", {
             voted: voted,
             length: Object.keys(people).length,
             ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
@@ -181,7 +182,7 @@ exports.host_wait = function (req, res) {
 };
 
 exports.scoreboard = function (req, res) {
-    res.render("scoreboard.pug", {votes: votes, length: Object.keys(people).length});
+    res.render("host_views/scoreboard.pug", {votes: votes, length: Object.keys(people).length});
 };
 
 exports.wait = function (req, res) {
@@ -196,8 +197,11 @@ exports.wait = function (req, res) {
         if(people[req.cookies["id"]].round !== round) {
             res.redirect("/vote");
         }
+        else if (finished) {
+            res.redirect("/client_result");
+        }
         else {
-            res.render("client_wait.pug");
+            res.render("client_views/client_wait.pug");
         }
     }
 };
@@ -217,7 +221,7 @@ exports.vote_get = function (req, res) {
         }
         else {
             people[req.cookies["id"]].notcurrent = false;
-            res.render("vote_screen", {persons: people, id: req.params.id, gift: rounds[round].description});
+            res.render("client_views/vote_screen", {persons: people, id: req.params.id, gift: rounds[round].description});
             people[req.cookies["id"]].notcurrent = true;
         }
     }
@@ -292,7 +296,7 @@ exports.has_gift = function (req, res) {
 };
 
 exports.invalid = function (req, res) {
-    res.render("Invalid_round", {error: error})
+    res.render("host_views/Invalid_round", {error: error})
 };
 
 exports.host_result = function(req, res) {
@@ -313,7 +317,10 @@ exports.host_result = function(req, res) {
             }
         }
     }
-    res.render("result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
+
+    finished = true;
+
+    res.render("host_views/result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
 };
 
 exports.client_result = function(req, res) {
