@@ -107,8 +107,11 @@ exports.next_gift = function (req, res) {
 };
 
 exports.new_gift = function (req, res) {
-    complete = req.body.rTrue !== undefined;
-    rounds.push(new Gift(req.body.gift));
+        if(!complete) {
+        rounds.push(new Gift(req.body.gift));
+    }
+
+    complete = complete || req.body.rTrue !== undefined;
 
     voted = 0;
 
@@ -311,16 +314,18 @@ exports.host_result = function(req, res) {
         people["person"+i].right = Math.floor(Math.random() * 50)
     } */
 
+    let count = 0;
     for(let i=0; i < rounds.length; i++) {
         for (let person_key in people) {
             if (people.hasOwnProperty(person_key) && person_key !== undefined) {
                 let person = people[person_key];
                 if (person.rounds[i] === rounds[i].owner) {
-                    people[person_key].right++;
+                    count++;
                 }
             }
         }
     }
+    people[person_key].right = count;
 
     finished = true;
 

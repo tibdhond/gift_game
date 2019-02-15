@@ -3,11 +3,11 @@ extends ../layout
 block content
     .container
         h1(style="color:black")= "Breng je stem uit voor: " + gift
-        br
-        form(method='POST' action='/vote')
-            button.btn.btn-primary.btn-block.btn-lg(type="submit", name="person", value="mine") Mijn cadeau
-        br
         .row.row-marg
+            .col-sm-4
+                .card.card-shadow.card-marg
+                    form(method='POST' action='/vote')
+                        button.btn.btn-primary.btn-block.btn-lg(type="submit", name="person", value="mine") Mijn cadeau
             each person in persons
                 if person.playing && person.notcurrent
                     .col-sm-4
