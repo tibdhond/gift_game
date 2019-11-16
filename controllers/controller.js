@@ -36,6 +36,12 @@ class Player {
 
 exports.host_socket = function(ws, req) {
     hostSocket = ws;
+    connects.forEach(socket => {
+        socket.send("finished")
+    });
+    ws.on('close', () => {
+        hostSocket = undefined;
+    })
 };
 
 exports.newSocket = function(ws, req) {
@@ -55,7 +61,12 @@ exports.login = function (req, res) {
     if('id' in req.cookies) {
         if (!(req.cookies["id"] in people)) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
-            hostSocket.send("new person");
+            if (hostSocket === undefined) {
+                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+            }
+            else {
+                hostSocket.send("new person");
+            }
         }
         res.redirect("/waiting_room");
     }
@@ -68,7 +79,12 @@ exports.newPerson = function (req, res) {
     if (!(req.body.Name.toString() in people)) {
         people[req.body.Name.toString()] = new Player(req.body.Name.toString());
         votes[req.body.Name.toString()] = 0;
-        hostSocket.send("new person");
+        if (hostSocket === undefined) {
+            res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+        }
+        else {
+            hostSocket.send("new person");
+        }
         res.cookie("id", req.body.Name.toString(), {maxAge : 24 * 3600000}).redirect("/waiting_room"); // 2 days
     }
     else {
@@ -100,7 +116,7 @@ exports.next_gift = function (req, res) {
     console.log(rounds);
     console.log(round);
     console.log(complete);
-    if (Object.keys(people).length === 0) {
+    if (!server) {
         res.redirect("/people");
     }
     else {
@@ -187,7 +203,7 @@ exports.reset = function (req, res) {
 };
 
 exports.host_wait = function (req, res) {
-    if (Object.keys(people).length === 0) {
+    if (!server) {
         res.redirect("/people");
     }
     else {
@@ -225,7 +241,12 @@ exports.wait = function (req, res) {
         if (!(req.cookies["id"] in people)) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
             votes[req.cookies["id"]] = 0;
-            hostSocket.send("new person");
+            if (hostSocket === undefined) {
+                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+            }
+            else {
+                hostSocket.send("new person");
+            }
         }
         if(people[req.cookies["id"]].round !== round) {
             res.redirect("/vote");
@@ -359,7 +380,7 @@ exports.host_result = function(req, res) {
     }
 
     finished = true;
-    
+
     connects.forEach(socket => {
         socket.send("finished")
     });
