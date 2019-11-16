@@ -373,13 +373,11 @@ exports.host_result = function(req, res) {
         if (people.hasOwnProperty(key)) {
             let count = 0;
             for (let i = 0; i < rounds.length; i++) {
-                for (let person_key in people) {
-                    if (person_key !== undefined && people.hasOwnProperty(person_key)) {
-                        let person = people[person_key];
-                        if (person.rounds[i] === rounds[i].owner) {
-                            count++;
-                        }
-                    }
+                let person = people[key];
+                if (person.rounds[i] === rounds[i].owner) {
+                    console.log(person.rounds[i]);
+                    console.log(rounds[i].owner);
+                    count++;
                 }
             }
             people[key].right = count;
