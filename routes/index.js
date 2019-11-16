@@ -1,7 +1,6 @@
 let express = require('express');
 let router = express.Router();
 let controller = require('../controllers/controller.js');
-let connects = [];
 
 /* GET home page. */
 router.ws('/client', controller.newSocket);

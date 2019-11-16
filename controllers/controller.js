@@ -1,5 +1,7 @@
-let people = {};
+let ip = require("ip");
+const address = ip.address();
 
+let people = {};
 let votes = {};
 let voted = 0;
 let gifts = [];
@@ -97,7 +99,7 @@ exports.newPerson = function (req, res) {
 
 exports.person_list = function (req, res) {
     if(!server) {
-        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {persons: people});
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {ip: address, persons: people});
         server = true;
     }
     else if("server" in req.cookies) {

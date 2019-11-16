@@ -6,12 +6,14 @@ let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
 
+let ip = require("ip");
+let address = ip.address();
 
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
-app.set('domain', 'localhost');
+app.set('domain', address);
 const server = http.createServer(app);
-server.listen(port, 'localhost');
+server.listen(port, address);
 server.on('error', onError);
 server.on('listening', onListening);
 
