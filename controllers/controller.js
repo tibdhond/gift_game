@@ -63,6 +63,7 @@ exports.login = function (req, res) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
             if (hostSocket === undefined) {
                 res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+                return;
             }
             else {
                 hostSocket.send("new person");
@@ -80,7 +81,8 @@ exports.newPerson = function (req, res) {
         people[req.body.Name.toString()] = new Player(req.body.Name.toString());
         votes[req.body.Name.toString()] = 0;
         if (hostSocket === undefined) {
-            res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+            res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
+            return;
         }
         else {
             hostSocket.send("new person");
@@ -242,7 +244,8 @@ exports.wait = function (req, res) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
             votes[req.cookies["id"]] = 0;
             if (hostSocket === undefined) {
-                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
+                return;
             }
             else {
                 hostSocket.send("new person");

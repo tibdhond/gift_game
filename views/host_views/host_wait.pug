@@ -12,14 +12,10 @@ block content
         form(method='POST' action='/reset')
             button.btn.btn-danger(type='submit' style="float:right", name="person", value=person) Reset
     script.
-        function dummy() {
-            return 1;
-        }
 
         let HOST = `${location.origin.replace(/^http/, 'ws')}/host`;
         console.log(HOST);
         let ws = new WebSocket(HOST);
-        setTimeout(_ => 1, 5000);
         ws.onmessage = function (msg) {
             console.log(msg.data);
             let ratio = msg.data;
@@ -28,8 +24,12 @@ block content
             bar.innerText = ratio;
             bar.style = 'width:'+ratio;
             if (ratio === "100%") {
-                setTimeout(dummy, 5000);
-                ws.close();
-                window.location.reload();
+                const sleep = function(milliseconds) {
+                    return new Promise(function(resolve) { setTimeout(resolve, milliseconds) });
+                }
+                sleep(2000).then(function() {
+                    ws.close();
+                    window.location.reload();
+                });
             }
         }
