@@ -10,6 +10,8 @@ let server = false;
 let rounds = [];
 let finished = false;
 
+let connects = [];
+
 class Gift {
     constructor(description) {
         this.description = description;
@@ -31,6 +33,10 @@ class Player {
         this.right = 0;
     }
 }
+
+exports.newSocket = function(ws, req) {
+    connects.push()
+};
 
 exports.home = function(req, res) {
     res.redirect("/login");
@@ -205,6 +211,7 @@ exports.wait = function (req, res) {
             res.redirect("/vote");
         }
         else if (finished) {
+            ws.send("finished");
             res.redirect("/client_result");
         }
         else {
@@ -314,18 +321,22 @@ exports.host_result = function(req, res) {
         people["person"+i].right = Math.floor(Math.random() * 50)
     } */
 
-    let count = 0;
-    for(let i=0; i < rounds.length; i++) {
-        for (let person_key in people) {
-            if (people.hasOwnProperty(person_key) && person_key !== undefined) {
-                let person = people[person_key];
-                if (person.rounds[i] === rounds[i].owner) {
-                    count++;
+    for(let key in people) {
+        if (people.hasOwnProperty(key)) {
+            let count = 0;
+            for (let i = 0; i < rounds.length; i++) {
+                for (let person_key in people) {
+                    if (person_key !== undefined && people.hasOwnProperty(person_key)) {
+                        let person = people[person_key];
+                        if (person.rounds[i] === rounds[i].owner) {
+                            count++;
+                        }
+                    }
                 }
             }
+            people[key].right = count;
         }
     }
-    people[person_key].right = count;
 
     finished = true;
 
