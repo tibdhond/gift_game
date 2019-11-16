@@ -5,6 +5,7 @@ let connects = [];
 
 /* GET home page. */
 router.ws('/client', controller.newSocket);
+router.ws('/host', controller.host_socket);
 router.get('/', controller.home);
 router.get('/login', controller.login);
 router.post('/login', controller.newPerson);

@@ -1,17 +1,35 @@
-extends ../host
+extends ../layout
 
 block content
     .container
         h1(style="color:black")= "Mensen zijn aan het stemmen voor: " + gift
-        h2 #{ratio}
+        h2#ratio #{ratio}
         .progress
-            .progress-bar.progress-bar-striped.progress-bar-animated(role='progressbar' aria-valuenow=voted aria-valuemin=0 aria-valuemax=length style='width:'+ratio)
+            .progress-bar.progress-bar-striped.progress-bar-animated#bar(role='progressbar' aria-valuenow=voted aria-valuemin=0 aria-valuemax=length style='width:'+ratio)
                 | #{ratio}
 
         br
         form(method='POST' action='/reset')
             button.btn.btn-danger(type='submit' style="float:right", name="person", value=person) Reset
     script.
-        setTimeout(function () {
-            window.location.reload(1);
-        }, 5000);
+        function dummy() {
+            return 1;
+        }
+
+        let HOST = `${location.origin.replace(/^http/, 'ws')}/host`;
+        console.log(HOST);
+        let ws = new WebSocket(HOST);
+        setTimeout(_ => 1, 5000);
+        ws.onmessage = function (msg) {
+            console.log(msg.data);
+            let ratio = msg.data;
+            document.getElementById("ratio").innerText = ratio;
+            let bar = document.getElementById("bar");
+            bar.innerText = ratio;
+            bar.style = 'width:'+ratio;
+            if (ratio === "100%") {
+                setTimeout(dummy, 5000);
+                ws.close();
+                window.location.reload();
+            }
+        }

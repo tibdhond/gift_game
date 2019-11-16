@@ -9,7 +9,7 @@ let error = "";
 let server = false;
 let rounds = [];
 let finished = false;
-
+let hostSocket = undefined;
 let connects = [];
 
 class Gift {
@@ -34,8 +34,17 @@ class Player {
     }
 }
 
+exports.host_socket = function(ws, req) {
+    hostSocket = ws;
+};
+
 exports.newSocket = function(ws, req) {
-    connects.push()
+    connects.push(ws);
+    ws.on('close', () => {
+        connects = connects.filter(conn => {
+            return (conn !== ws);
+        });
+    });
 };
 
 exports.home = function(req, res) {
@@ -46,6 +55,7 @@ exports.login = function (req, res) {
     if('id' in req.cookies) {
         if (!(req.cookies["id"] in people)) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
+            hostSocket.send("new person");
         }
         res.redirect("/waiting_room");
     }
@@ -58,6 +68,7 @@ exports.newPerson = function (req, res) {
     if (!(req.body.Name.toString() in people)) {
         people[req.body.Name.toString()] = new Player(req.body.Name.toString());
         votes[req.body.Name.toString()] = 0;
+        hostSocket.send("new person");
         res.cookie("id", req.body.Name.toString(), {maxAge : 24 * 3600000}).redirect("/waiting_room"); // 2 days
     }
     else {
@@ -89,31 +100,34 @@ exports.next_gift = function (req, res) {
     console.log(rounds);
     console.log(round);
     console.log(complete);
-    if (complete && rounds.length === round+1) { // All gifts are known
-        if(gifts.length > 0) {  // Pick a random gift
-            let index = 0;
-            if (gifts.length > 1) {
-                let z = (2 / (gifts.length - 1)) / gifts.length;    // Custom distribution where smaller numbers have higher chance
-                index = gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
-            }
-            rounds.push(gifts[index]);  // Set gift to be used in current round
-            gifts.splice(index, 1); // Presents in use are removed from list
-            res.render("host_views/next.pug", {gift: rounds[round+1].description.toString(), complete: complete});
-        }
-        else {  // Game has ended
-            res.redirect("/host_result");
-        }
+    if (Object.keys(people).length === 0) {
+        res.redirect("/people");
     }
-    else {  // Should only be called on a refresh (gift already selected)
-        res.render("host_views/next.pug", {
-            gift: rounds.length === round + 1 ? "" : rounds[round].description.toString(),
-            complete: complete
-        });
+    else {
+        if (complete && rounds.length === round + 1) { // All gifts are known
+            if (gifts.length > 0) {  // Pick a random gift
+                let index = 0;
+                if (gifts.length > 1) {
+                    let z = (2 / (gifts.length - 1)) / gifts.length;    // Custom distribution where smaller numbers have higher chance
+                    index = gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
+                }
+                rounds.push(gifts[index]);  // Set gift to be used in current round
+                gifts.splice(index, 1); // Presents in use are removed from list
+                res.render("host_views/next.pug", {gift: rounds[round + 1].description.toString(), complete: complete});
+            } else {  // Game has ended
+                res.redirect("/host_result");
+            }
+        } else {  // Should only be called on a refresh (gift already selected)
+            res.render("host_views/next.pug", {
+                gift: rounds.length === round + 1 ? "" : rounds[round].description.toString(),
+                complete: complete
+            });
+        }
     }
 };
 
 exports.new_gift = function (req, res) {
-        if(!complete) {
+    if(!complete) {
         rounds.push(new Gift(req.body.gift));
     }
 
@@ -136,7 +150,9 @@ exports.new_gift = function (req, res) {
     }
 
     round += 1;
-
+    connects.forEach(socket => {
+        socket.send("finished")
+    });
     console.log(votes);
 
     res.redirect("/host_wait");
@@ -171,26 +187,29 @@ exports.reset = function (req, res) {
 };
 
 exports.host_wait = function (req, res) {
-    if(voted === Object.keys(people).length) {
-        if (rounds[round].owner === undefined && error === "") {
-            error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
-        }
-
-        if (error !== "") {
-            res.redirect("/invalid");
-        }
-        else {
-            gifts.push(rounds[round]);
-            res.redirect("/scoreboard");
-        }
+    if (Object.keys(people).length === 0) {
+        res.redirect("/people");
     }
     else {
-        res.render("host_views/host_wait.pug", {
-            voted: voted,
-            length: Object.keys(people).length,
-            ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
-            gift: rounds[round].description
-        });
+        if (voted === Object.keys(people).length) {
+            if (rounds[round].owner === undefined && error === "") {
+                error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
+            }
+
+            if (error !== "") {
+                res.redirect("/invalid");
+            } else {
+                gifts.push(rounds[round]);
+                res.redirect("/scoreboard");
+            }
+        } else {
+            res.render("host_views/host_wait.pug", {
+                voted: voted,
+                length: Object.keys(people).length,
+                ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
+                gift: rounds[round].description
+            });
+        }
     }
 };
 
@@ -206,12 +225,12 @@ exports.wait = function (req, res) {
         if (!(req.cookies["id"] in people)) {
             people[req.cookies["id"]] = new Player(req.cookies["id"]);
             votes[req.cookies["id"]] = 0;
+            hostSocket.send("new person");
         }
         if(people[req.cookies["id"]].round !== round) {
             res.redirect("/vote");
         }
         else if (finished) {
-            ws.send("finished");
             res.redirect("/client_result");
         }
         else {
@@ -291,6 +310,7 @@ exports.vote_post = function (req, res) {
             }
             voted += 1;
             people[req.cookies["id"]].round = round;
+            hostSocket.send("" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%");
             res.redirect("/waiting_room");
         }
     }
@@ -339,6 +359,10 @@ exports.host_result = function(req, res) {
     }
 
     finished = true;
+    
+    connects.forEach(socket => {
+        socket.send("finished")
+    });
 
     res.render("host_views/result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
 };
