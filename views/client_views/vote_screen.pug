@@ -1,0 +1,20 @@
+extends ../client
+
+block content
+    .container
+        h1(style="color:black")= "Breng je stem uit voor: " + gift
+        .row.row-marg
+            .col-sm-4
+                .card.card-shadow.card-marg
+                    form(method='POST' action='/vote')
+                        button.btn.btn-primary.btn-block.btn-lg(type="submit", name="person", value="mine") Mijn cadeau
+            each person in persons
+                if person.playing && person.notcurrent
+                    .col-sm-4
+                        .card.card-shadow.card-marg
+                            .card-body.text-center
+                                i.material-icons.md-icon-48 person
+                                h5.card-title #{person.name}
+                                form(method='POST' action='/vote')
+                                    button.btn.btn-primary(type='submit' style="float:right", name="person", value=person.name) Stem
+

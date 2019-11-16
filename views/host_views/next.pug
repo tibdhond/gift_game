@@ -1,0 +1,31 @@
+extends ../host
+
+block content
+    .container
+        h1 Volgende cadeau
+        br
+        form(method='POST' action='/gift')
+            .form-row
+                .form-group.col-md-6
+                    .field
+                        if complete
+                            h4 #{gift}
+                        else
+                            input#title.form-control(type='text', name='gift', placeholder="", required='true')
+            .form-row
+                .form-group.col-md-10
+                    if complete
+                        .btn-group-toggle(data-toggle='buttons' style="float:right")
+                            label.btn.btn-secondary.active
+                                input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
+                                |  Willeukeurig cadeau
+                    else
+                        .btn-group-toggle(data-toggle='buttons', style="float:right")
+                            label.btn.btn-secondary
+                                input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
+                                |  Willeukeurig cadeau
+            .form-row
+                br
+            .form-row
+                .form-group.col-md-10
+                    button.btn.btn-primary(type='submit' style="float:right") Volgende stemronde

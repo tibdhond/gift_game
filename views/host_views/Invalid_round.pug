@@ -1,0 +1,8 @@
+extends ../host
+
+block content
+    .container
+        h1.text-danger #{error}
+        br
+        form(method='POST', action='/reset')
+            button.btn.btn-primary(type='submit', style="float:right") Herstart

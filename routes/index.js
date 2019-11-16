@@ -1,9 +1,10 @@
 let express = require('express');
-let ws = require('express-ws');
 let router = express.Router();
-controller = require('../controller.js');
+let controller = require('../controllers/controller.js');
+let connects = [];
 
 /* GET home page. */
+router.ws('/client', controller.newSocket);
 router.get('/', controller.home);
 router.get('/login', controller.login);
 router.post('/login', controller.newPerson);
@@ -19,4 +20,7 @@ router.get('/vote', controller.nocache, controller.vote_get);
 router.post('/vote', controller.vote_post);
 router.post('/reset', controller.reset);
 router.get('/invalid', controller.invalid);
+router.get('/host_result', controller.host_result);
+router.get('/client_result', controller.client_result);
 module.exports = router;
+

@@ -1,0 +1,30 @@
+extends ../client
+
+block content
+    table.table.table-striped
+        thead
+            tr
+                th(scope='col') Round
+                th(scope='col') Gift
+                th(scope='col') Your answer
+                th(scope='col') Right answer
+        tbody
+            each gift, i in rounds
+                if person.rounds[i] === "mine"
+                    tr.bg-info
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}
+                else if person.rounds[i] === gift.owner
+                    tr.bg-success
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}
+                else
+                    tr.bg-danger
+                        th(scope='row') #{i}
+                        td #{gift.description}
+                        td #{person.rounds[i]}
+                        td #{gift.owner}

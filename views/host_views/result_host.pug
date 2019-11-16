@@ -1,0 +1,53 @@
+extends ../host
+
+block content
+    .container
+        h1(style="color:black")= "Einduitslag"
+        canvas#barChart
+
+block script
+    script.
+        //bar
+        let ctxB = document.getElementById("barChart").getContext('2d');
+        let names = [];
+        let votes = [];
+        let colors1 = [];
+        let colors2 = [];
+        for(person of JSON.parse('!{JSON.stringify(people)}')) {
+            names.push(person.name);
+            votes.push(person.right);
+            let temp = Math.floor(Math.random() * 255);
+            let color1 = 'rgba(' + temp;
+            let color2 = 'rgba(' + temp;
+            temp = Math.floor(Math.random() * 255);
+            color1 += ", " + temp;
+            color2 += ", " + temp;
+            temp = Math.floor(Math.random() * 255);
+            color1 += ", " + temp + ", 0.2)";
+            color2 += ", " + temp + ", 1)";
+
+            colors1.push(color1);
+            colors2.push(color2);
+        }
+        let myBarChart = new Chart(ctxB, {
+            type: 'bar',
+            data: {
+                labels: names,
+                datasets: [{
+                    label: '# juiste antwoorden',
+                    data: votes,
+                    backgroundColor: colors1,
+                    borderColor: colors2,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
