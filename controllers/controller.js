@@ -207,32 +207,36 @@ exports.reset = function (req, res) {
 exports.host_wait = function (req, res) {
     if (!server) {
         res.redirect("/people");
+        return;
     }
-    else {
-        if (voted === Object.keys(people).length) {
-            if (rounds[round].owner === undefined && error === "") {
-                error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
-            }
-
-            if (error !== "") {
-                res.redirect("/invalid");
-            } else {
-                gifts.push(rounds[round]);
-                res.redirect("/scoreboard");
-            }
-        } else {
-            res.render("host_views/host_wait.pug", {
-                voted: voted,
-                length: Object.keys(people).length,
-                ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
-                gift: rounds[round].description
-            });
+    if (voted === Object.keys(people).length) {
+        if (rounds[round].owner === undefined && error === "") {
+            error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
         }
+
+        if (error !== "") {
+            res.redirect("/invalid");
+        } else {
+            gifts.push(rounds[round]);
+            res.redirect("/scoreboard");
+        }
+        return;
     }
+    res.render("host_views/host_wait.pug", {
+        voted: voted,
+        length: Object.keys(people).length,
+        ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
+        gift: rounds[round].description
+    });
 };
 
 exports.scoreboard = function (req, res) {
-    res.render("host_views/scoreboard.pug", {votes: votes, length: Object.keys(people).length});
+    if(!server) {
+        res.redirect("/people");
+    }
+    else {
+        res.render("host_views/scoreboard.pug", {votes: votes, length: Object.keys(people).length});
+    }
 };
 
 exports.wait = function (req, res) {
