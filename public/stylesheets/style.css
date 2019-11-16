@@ -106,3 +106,13 @@ h2 {
     bottom: 20px;
     right: 20px;
 }
+
+.image-container {
+    width: inherit;
+    text-align: center;
+    margin-top: 3em;
+}
+
+.filler-span {
+    flex: auto;
+}

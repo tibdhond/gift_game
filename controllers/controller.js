@@ -11,6 +11,7 @@ let rounds = [];
 let finished = false;
 let hostSocket = undefined;
 let connects = [];
+const gifs = ["banana", "ferret", "spongebob", "koala", "dog", "turtle", "unicorn", "computer", "parrot", "minecraft"];
 
 class Gift {
     constructor(description) {
@@ -262,7 +263,8 @@ exports.wait = function (req, res) {
             res.redirect("/client_result");
         }
         else {
-            res.render("client_views/client_wait.pug");
+            let gif = gifs[Math.floor(Math.random() * gifs.length)];
+            res.render("client_views/client_wait.pug", {image: `images/${gif}.gif`});
         }
     }
 };
