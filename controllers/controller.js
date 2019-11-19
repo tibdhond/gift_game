@@ -1,5 +1,12 @@
-let ip = require("ip");
-const address = ip.address();
+let os = require( 'os' );
+let networkInterfaces = os.networkInterfaces( );
+let address = undefined;
+
+networkInterfaces['Wi-Fi'].forEach(info => {
+    if(info.family === 'IPv4') {
+        address = info.address;
+    }
+});
 
 let people = {};
 let votes = {};
@@ -148,11 +155,17 @@ exports.next_gift = function (req, res) {
 };
 
 exports.new_gift = function (req, res) {
-    if(!complete) {
+    if(req.body.gift !== '') {
         rounds.push(new Gift(req.body.gift));
+        complete = complete || req.body.rTrue !== undefined;
     }
-
-    complete = complete || req.body.rTrue !== undefined;
+    else {
+        if(req.body.rTrue !== undefined) {
+            complete = true;
+            res.redirect('/gift');
+            return;
+        }
+    }
 
     voted = 0;
 
