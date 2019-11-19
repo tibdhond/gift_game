@@ -6,8 +6,15 @@ let path = require('path');
 let cookieParser = require('cookie-parser');
 let logger = require('morgan');
 
-let ip = require("ip");
-let address = ip.address();
+let os = require( 'os' );
+let networkInterfaces = os.networkInterfaces( );
+let address = undefined;
+
+networkInterfaces['Wi-Fi'].forEach(info => {
+  if(info.family === 'IPv4') {
+    address = info.address;
+  }
+});
 
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
