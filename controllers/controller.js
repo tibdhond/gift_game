@@ -1,5 +1,6 @@
-let os = require( 'os' );
-let networkInterfaces = os.networkInterfaces( );
+const os = require( 'os' );
+const fs = require('fs');
+const networkInterfaces = os.networkInterfaces( );
 let address = undefined;
 
 networkInterfaces['Wi-Fi'].forEach(info => {
@@ -8,18 +9,26 @@ networkInterfaces['Wi-Fi'].forEach(info => {
     }
 });
 
-let people = {};
-let votes = {};
-let voted = 0;
-let gifts = [];
-let complete = false;
-let round = -1;
+let state = {
+    people: {},
+    votes: {},
+    voted: 0,
+    gifts: [],
+    complete: false,
+    round: -1,
+    rounds: [],
+    finished: false
+};
+
 let error = "";
+
+// Check if server has registered
 let server = false;
-let rounds = [];
-let finished = false;
+
+// Websocket stuff
 let hostSocket = undefined;
 let connects = [];
+
 const gifs = ["banana", "ferret", "spongebob", "koala", "dog", "turtle", "unicorn", "computer", "parrot", "minecraft"];
 
 class Gift {
@@ -56,6 +65,7 @@ exports.host_socket = function(ws, req) {
 
 exports.newSocket = function(ws, req) {
     connects.push(ws);
+    console.log(`Amount of websockets: ${connects.length}`);
     ws.on('close', () => {
         connects = connects.filter(conn => {
             return (conn !== ws);
@@ -69,10 +79,10 @@ exports.home = function(req, res) {
 
 exports.login = function (req, res) {
     if('id' in req.cookies) {
-        if (!(req.cookies["id"] in people)) {
-            people[req.cookies["id"]] = new Player(req.cookies["id"]);
+        if (!(req.cookies["id"] in state.people)) {
+            state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
             if (hostSocket === undefined) {
-                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."})
+                res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
                 return;
             }
             else {
@@ -87,9 +97,9 @@ exports.login = function (req, res) {
 };
 
 exports.newPerson = function (req, res) {
-    if (!(req.body.Name.toString() in people)) {
-        people[req.body.Name.toString()] = new Player(req.body.Name.toString());
-        votes[req.body.Name.toString()] = 0;
+    if (!(req.body.Name.toString() in state.people)) {
+        state.people[req.body.Name.toString()] = new Player(req.body.Name.toString());
+        state.votes[req.body.Name.toString()] = 0;
         if (hostSocket === undefined) {
             res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
             return;
@@ -106,49 +116,66 @@ exports.newPerson = function (req, res) {
 
 exports.person_list = function (req, res) {
     if(!server) {
-        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {ip: address, persons: people});
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {ip: address, persons: state.people});
         server = true;
     }
     else if("server" in req.cookies) {
-        res.render("host_views/persons.pug", {persons: people})
+        res.render("host_views/persons.pug", {persons: state.people})
     }
     else {
         res.redirect("/");
     }
 };
 
+exports.start = function (req, res) {
+    if(req.body.rTrue !== undefined) {
+        let oldState = undefined;
+        fs.readFile("gameState.json", (err, data) => {
+            if(err) throw err; oldState = data;
+            console.log(`Old state: ${oldState}`);
+            state = JSON.parse(oldState);
+            console.log(`New state: ${state}`);
+            res.redirect("/gift")
+        });
+    }
+    else {
+        res.redirect("/gift")
+    }
+};
+
 exports.person_delete = function(req, res) {
-    delete people[req.body.person];
-    delete votes[req.body.person];
+    delete state.people[req.body.person];
+    delete state.votes[req.body.person];
     res.redirect("/" + req.params.origin);
 };
 
 exports.next_gift = function (req, res) {
-    console.log(gifts);
-    console.log(rounds);
-    console.log(round);
-    console.log(complete);
+    console.log(state.gifts);
+    console.log(state.rounds);
+    console.log(state.round);
+    console.log(state.complete);
     if (!server) {
         res.redirect("/people");
     }
     else {
-        if (complete && rounds.length === round + 1) { // All gifts are known
-            if (gifts.length > 0) {  // Pick a random gift
+        fs.writeFile("gameState.json", JSON.stringify(state), err => {if(err) throw err});
+        if (state.complete && state.rounds.length === state.round + 1) { // All gifts are known
+            if (state.gifts.length > 0) {  // Pick a random gift
                 let index = 0;
-                if (gifts.length > 1) {
-                    let z = (2 / (gifts.length - 1)) / gifts.length;    // Custom distribution where smaller numbers have higher chance
-                    index = gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
+                if (state.gifts.length > 1) {
+                    let z = (2 / (state.gifts.length - 1)) / state.gifts.length;    // Custom distribution where smaller numbers have higher chance
+                    index = state.gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
                 }
-                rounds.push(gifts[index]);  // Set gift to be used in current round
-                gifts.splice(index, 1); // Presents in use are removed from list
-                res.render("host_views/next.pug", {gift: rounds[round + 1].description.toString(), complete: complete});
+                state.rounds.push(state.gifts[index]);  // Set gift to be used in current round
+                state.gifts.splice(index, 1); // Presents in use are removed from list
+                res.render("host_views/next.pug", {gift: state.rounds[state.round + 1].description.toString(), complete: state.complete});
             } else {  // Game has ended
                 res.redirect("/host_result");
             }
         } else {  // Should only be called on a refresh (gift already selected)
             res.render("host_views/next.pug", {
-                gift: rounds.length === round + 1 ? "" : rounds[round].description.toString(),
-                complete: complete
+                gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round].description.toString(),
+                complete: state.complete
             });
         }
     }
@@ -156,63 +183,63 @@ exports.next_gift = function (req, res) {
 
 exports.new_gift = function (req, res) {
     if(req.body.gift !== '') {
-        rounds.push(new Gift(req.body.gift));
-        complete = complete || req.body.rTrue !== undefined;
+        state.rounds.push(new Gift(req.body.gift));
+        state.complete = state.complete || req.body.rTrue !== undefined;
     }
     else {
         if(req.body.rTrue !== undefined) {
-            complete = true;
+            state.complete = true;
             res.redirect('/gift');
             return;
         }
     }
 
-    voted = 0;
+    state.voted = 0;
 
-    if (round === 0) {
-        for (let person_key in people) {
-            if (people.hasOwnProperty(person_key) && person_key !== undefined)
-                votes[person_key] = 0;
+    if (state.round === 0) {
+        for (let person_key in state.people) {
+            if (state.people.hasOwnProperty(person_key) && person_key !== undefined)
+                state.votes[person_key] = 0;
         }
     }
     else {
-        for(let person_key in votes) {
-            if(votes.hasOwnProperty(person_key) && person_key) {
-                votes[person_key] = 0;
+        for(let person_key in state.votes) {
+            if(state.votes.hasOwnProperty(person_key) && person_key) {
+                state.votes[person_key] = 0;
             }
         }
     }
 
-    round += 1;
+    state.round += 1;
     connects.forEach(socket => {
         socket.send("finished")
     });
-    console.log(votes);
+    console.log(state.votes);
 
     res.redirect("/host_wait");
 };
 
 exports.reset = function (req, res) {
 
-    voted = 0;
+    state.voted = 0;
     error = "";
 
-    for (let person_key in people) {
-        if (people.hasOwnProperty(person_key)) {
-            people[person_key].round = round - 1;
+    for (let person_key in state.people) {
+        if (state.people.hasOwnProperty(person_key)) {
+            state.people[person_key].round = state.round - 1;
         }
     }
 
-    if (round === 0) {
-        for (let person_key in people) {
-            if (people.hasOwnProperty(person_key) && person_key !== undefined)
-                votes[person_key] = 0;
+    if (state.round === 0) {
+        for (let person_key in state.people) {
+            if (state.people.hasOwnProperty(person_key) && person_key !== undefined)
+                state.votes[person_key] = 0;
         }
     }
     else {
-        for(let person_key in votes) {
-            if(votes.hasOwnProperty(person_key) && person_key) {
-                votes[person_key] = 0;
+        for(let person_key in state.votes) {
+            if(state.votes.hasOwnProperty(person_key) && person_key) {
+                state.votes[person_key] = 0;
             }
         }
     }
@@ -225,24 +252,24 @@ exports.host_wait = function (req, res) {
         res.redirect("/people");
         return;
     }
-    if (voted === Object.keys(people).length) {
-        if (rounds[round].owner === undefined && error === "") {
+    if (state.voted === Object.keys(state.people).length) {
+        if (state.rounds[state.round].owner === undefined && error === "") {
             error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
         }
 
         if (error !== "") {
             res.redirect("/invalid");
         } else {
-            gifts.push(rounds[round]);
+            state.gifts.push(state.rounds[state.round]);
             res.redirect("/scoreboard");
         }
         return;
     }
     res.render("host_views/host_wait.pug", {
-        voted: voted,
-        length: Object.keys(people).length,
-        ratio: "" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%",
-        gift: rounds[round].description
+        voted: state.voted,
+        length: Object.keys(state.people).length,
+        ratio: "" + (Math.floor(state.voted * 100 / Object.keys(state.people).length)) + "%",
+        gift: state.rounds[state.round].description
     });
 };
 
@@ -251,7 +278,7 @@ exports.scoreboard = function (req, res) {
         res.redirect("/people");
     }
     else {
-        res.render("host_views/scoreboard.pug", {votes: votes, length: Object.keys(people).length});
+        res.render("host_views/scoreboard.pug", {votes: state.votes, length: Object.keys(state.people).length});
     }
 };
 
@@ -260,9 +287,9 @@ exports.wait = function (req, res) {
         res.redirect("/login");
     }
     else {
-        if (!(req.cookies["id"] in people)) {
-            people[req.cookies["id"]] = new Player(req.cookies["id"]);
-            votes[req.cookies["id"]] = 0;
+        if (!(req.cookies["id"] in state.people)) {
+            state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
+            state.votes[req.cookies["id"]] = 0;
             if (hostSocket === undefined) {
                 res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
                 return;
@@ -271,10 +298,10 @@ exports.wait = function (req, res) {
                 hostSocket.send("new person");
             }
         }
-        if(people[req.cookies["id"]].round !== round) {
+        if(state.people[req.cookies["id"]].round !== state.round) {
             res.redirect("/vote");
         }
-        else if (finished) {
+        else if (state.finished) {
             res.redirect("/client_result");
         }
         else {
@@ -289,18 +316,18 @@ exports.vote_get = function (req, res) {
         res.redirect("/login");
     }
     else {
-        if (!(req.cookies["id"] in people)) {
-            people[req.cookies["id"]] = new Player(req.cookies["id"]);
-            votes[req.cookies["id"]] = 0;
+        if (!(req.cookies["id"] in state.people)) {
+            state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
+            state.votes[req.cookies["id"]] = 0;
         }
-        if(people[req.cookies["id"]].round >= round) {
-            people[req.cookies["id"]].round = round;
+        if(state.people[req.cookies["id"]].round >= state.round) {
+            state.people[req.cookies["id"]].round = state.round;
             res.redirect("/waiting_room");
         }
         else {
-            people[req.cookies["id"]].notcurrent = false;
-            res.render("client_views/vote_screen", {persons: people, id: req.params.id, gift: rounds[round].description});
-            people[req.cookies["id"]].notcurrent = true;
+            state.people[req.cookies["id"]].notcurrent = false;
+            res.render("client_views/vote_screen", {persons: state.people, id: req.params.id, gift: state.rounds[state.round].description});
+            state.people[req.cookies["id"]].notcurrent = true;
         }
     }
 };
@@ -310,52 +337,52 @@ exports.vote_post = function (req, res) {
         res.redirect("/login");
     }
     else {      // Person has logged in
-        if (!(req.cookies["id"] in people)) {   // Person has logged in but server forgot
-            people[req.cookies["id"]] = new Player(req.cookies["id"]);
-            votes[req.cookies["id"]] = 0;
+        if (!(req.cookies["id"] in state.people)) {   // Person has logged in but server forgot
+            state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
+            state.votes[req.cookies["id"]] = 0;
         }
-        if (people[req.cookies["id"]].round >= round) {     // Person is not allowed to vote (yet)
-            people[req.cookies["id"]].round = round;
+        if (state.people[req.cookies["id"]].round >= state.round) {     // Person is not allowed to vote (yet)
+            state.people[req.cookies["id"]].round = state.round;
             res.redirect("/waiting_room");
         }
         else {      // Person is allowed to vote
             if (req.body.person.toString() === "mine") {        // Person has claimed the gift
-                if(rounds[round].owner !== undefined && rounds[round].owner !== req.cookies["id"]) {    // gift already claimed
+                if(state.rounds[state.round].owner !== undefined && state.rounds[state.round].owner !== req.cookies["id"]) {    // gift already claimed
                     error = "Meerdere mensen hebben het cadeau opgeëist, de ronde begint opnieuw.";
                     // Errors can only be handled at the end of the round
-                    rounds[round].owner = undefined;
+                    state.rounds[state.round].owner = undefined;
                 }
                 else {  // gift claimed successfully
-                    rounds[round].setOwner(req.cookies["id"]);
-                    votes[req.cookies["id"]] += 1;
-                    if(people[req.cookies["id"]].rounds.length === round+1) {
+                    state.rounds[state.round].setOwner(req.cookies["id"]);
+                    state.votes[req.cookies["id"]] += 1;
+                    if(state.people[req.cookies["id"]].rounds.length === state.round+1) {
                         // last round was invalid and has restarted; existing gift may be invalid
-                        people[req.cookies["id"]].rounds[round] = req.body.person;
+                        state.people[req.cookies["id"]].rounds[state.round] = req.body.person;
                     }
                     else {  // no problems
-                        people[req.cookies["id"]].rounds.push(req.body.person);
+                        state.people[req.cookies["id"]].rounds.push(req.body.person);
                     }
                 }
             }
-            else if (req.body.person in votes) {    // successful vote
-                votes[req.body.person] += 1;
-                if(people[req.cookies["id"]].rounds.length === round+1) {
+            else if (req.body.person in state.votes) {    // successful vote
+                state.votes[req.body.person] += 1;
+                if(state.people[req.cookies["id"]].rounds.length === state.round+1) {
                     // last round was invalid and has restarted; existing gift may be invalid
-                    people[req.cookies["id"]].rounds[round] = req.body.person;
+                    state.people[req.cookies["id"]].rounds[state.round] = req.body.person;
                 }
                 else {  // no problems
-                    people[req.cookies["id"]].rounds.push(req.body.person);
+                    state.people[req.cookies["id"]].rounds.push(req.body.person);
                 }
             }
             else {  // person not found, should not happen
-                console.log(votes);
+                console.log(state.votes);
                 console.log(req.body.person.toString());
                 console.log(typeof req.body.person.toString());
                 throw new Error();
             }
-            voted += 1;
-            people[req.cookies["id"]].round = round;
-            hostSocket.send("" + (Math.floor(voted * 100 / Object.keys(people).length)) + "%");
+            state.voted += 1;
+            state.people[req.cookies["id"]].round = state.round;
+            hostSocket.send("" + (Math.floor(state.voted * 100 / Object.keys(state.people).length)) + "%");
             res.redirect("/waiting_room");
         }
     }
@@ -369,8 +396,8 @@ exports.nocache = function(req, res, next) {
 };
 
 exports.has_gift = function (req, res) {
-    people[req.body.person].playing = false;
-    gifts.pop();
+    state.people[req.body.person].playing = false;
+    state.gifts.pop();
     res.redirect("/gift")
 };
 
@@ -386,30 +413,30 @@ exports.host_result = function(req, res) {
         people["person"+i].right = Math.floor(Math.random() * 50)
     } */
 
-    for(let key in people) {
-        if (people.hasOwnProperty(key)) {
+    for(let key in state.people) {
+        if (state.people.hasOwnProperty(key)) {
             let count = 0;
-            for (let i = 0; i < rounds.length; i++) {
-                let person = people[key];
-                if (person.rounds[i] === rounds[i].owner) {
+            for (let i = 0; i < state.rounds.length; i++) {
+                let person = state.people[key];
+                if (person.rounds[i] === state.rounds[i].owner) {
                     console.log(person.rounds[i]);
-                    console.log(rounds[i].owner);
+                    console.log(state.rounds[i].owner);
                     count++;
                 }
             }
-            people[key].right = count;
+            state.people[key].right = count;
         }
     }
 
-    finished = true;
+    state.finished = true;
 
     connects.forEach(socket => {
         socket.send("finished")
     });
 
-    res.render("host_views/result_host", {people: Object.values(people).sort(function(a, b){return b.right - a.right})});
+    res.render("host_views/result_host", {people: Object.values(state.people).sort(function(a, b){return b.right - a.right})});
 };
 
 exports.client_result = function(req, res) {
-    res.render("client_views/result_client", {rounds: rounds, person: people[req.cookies["id"]]});
+    res.render("client_views/result_client", {rounds: state.rounds, person: state.people[req.cookies["id"]]});
 };

@@ -11,6 +11,7 @@ router.post('/login', controller.newPerson);
 router.get('/people', controller.person_list);
 router.post('/people/delete/:origin', controller.person_delete);
 router.post('/people/juist', controller.has_gift);
+router.post('/start', controller.start);
 router.get("/gift", controller.next_gift);
 router.post("/gift", controller.new_gift);
 router.get('/host_wait', controller.host_wait);

@@ -15,7 +15,12 @@ block content
             else
                 p Er zijn nog geen mensen.
 
-        form(method='GET' action='/gift')
+        form(method='POST' action='/start')
+            .btn-group-toggle(data-toggle='buttons', style="float:right")
+                label.btn.btn-secondary
+                    input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
+                    |  Speel verder
+
             button.btn.btn-primary(type='submit' style="float:right") Start spel
 
     script.
