@@ -10,11 +10,16 @@ let os = require( 'os' );
 let networkInterfaces = os.networkInterfaces( );
 let address = undefined;
 
-networkInterfaces['Wi-Fi'].forEach(info => {
-  if(info.family === 'IPv4') {
-    address = info.address;
-  }
-});
+if(networkInterfaces['Wi-Fi'] === undefined) {
+  address = "localhost";
+}
+else {
+  networkInterfaces['Wi-Fi'].forEach(info => {
+    if (info.family === 'IPv4') {
+      address = info.address;
+    }
+  });
+}
 
 const port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);

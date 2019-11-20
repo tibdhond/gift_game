@@ -3,11 +3,16 @@ const fs = require('fs');
 const networkInterfaces = os.networkInterfaces( );
 let address = undefined;
 
-networkInterfaces['Wi-Fi'].forEach(info => {
-    if(info.family === 'IPv4') {
-        address = info.address;
-    }
-});
+if(networkInterfaces['Wi-Fi'] === undefined) {
+    address = undefined;
+}
+else {
+    networkInterfaces['Wi-Fi'].forEach(info => {
+        if (info.family === 'IPv4') {
+            address = info.address;
+        }
+    });
+}
 
 let state = {
     people: {},
@@ -19,6 +24,8 @@ let state = {
     rounds: [],
     finished: false
 };
+
+let rm_pc = false;
 
 let error = "";
 
@@ -128,7 +135,8 @@ exports.person_list = function (req, res) {
 };
 
 exports.start = function (req, res) {
-    if(req.body.rTrue !== undefined) {
+    rm_pc = req.body.rm_pc !== undefined;
+    if(req.body.load !== undefined) {
         let oldState = undefined;
         fs.readFile("gameState.json", (err, data) => {
             if(err) throw err; oldState = data;
@@ -278,7 +286,8 @@ exports.scoreboard = function (req, res) {
         res.redirect("/people");
     }
     else {
-        res.render("host_views/scoreboard.pug", {votes: state.votes, length: Object.keys(state.people).length});
+        res.render("host_views/scoreboard.pug", {votes: state.votes, people: state.people, rm_pc: rm_pc,
+                                        length: Object.keys(state.people).length});
     }
 };
 
@@ -312,21 +321,22 @@ exports.wait = function (req, res) {
 };
 
 exports.vote_get = function (req, res) {
-    if(!("id" in req.cookies)) {
+    if(!("id" in req.cookies)) {    // Person hasn't logged in yet
         res.redirect("/login");
     }
     else {
-        if (!(req.cookies["id"] in state.people)) {
+        if (!(req.cookies["id"] in state.people)) { // Player is not yet registered with server
             state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
             state.votes[req.cookies["id"]] = 0;
         }
-        if(state.people[req.cookies["id"]].round >= state.round) {
+        if(state.people[req.cookies["id"]].round >= state.round) {  // Player has already voted
             state.people[req.cookies["id"]].round = state.round;
             res.redirect("/waiting_room");
         }
         else {
             state.people[req.cookies["id"]].notcurrent = false;
-            res.render("client_views/vote_screen", {persons: state.people, id: req.params.id, gift: state.rounds[state.round].description});
+            res.render("client_views/vote_screen", {persons: state.people, id: req.params.id,
+                gift: state.rounds[state.round].description, rm_pc: rm_pc});
             state.people[req.cookies["id"]].notcurrent = true;
         }
     }

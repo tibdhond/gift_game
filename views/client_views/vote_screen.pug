@@ -9,7 +9,7 @@ block content
                     form(method='POST' action='/vote')
                         button.btn.btn-primary.btn-block.btn-lg(type="submit", name="person", value="mine") Mijn cadeau
             each person in persons
-                if person.playing && person.notcurrent
+                if person.notcurrent && (person.playing || !rm_pc)
                     .col-sm-4
                         .card.card-shadow.card-marg
                             .card-body.text-center

@@ -16,10 +16,15 @@ block content
                 p Er zijn nog geen mensen.
 
         form(method='POST' action='/start')
-            .btn-group-toggle(data-toggle='buttons', style="float:right")
-                label.btn.btn-secondary
-                    input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
-                    |  Speel verder
+            .form-row
+                .btn-group-toggle(data-toggle='buttons', style="float:right")
+                    label.btn.btn-white
+                        input#rm_pc(type='checkbox', name='rm_pc' autocomplete='off', style="float:right")
+                        |  Verwijder spelers
+                .btn-group-toggle(data-toggle='buttons', style="float:right")
+                    label.btn.btn-white
+                        input#load(type='checkbox', name='load' autocomplete='off', style="float:right")
+                        |  Speel verder
 
             button.btn.btn-primary(type='submit' style="float:right") Start spel
 
