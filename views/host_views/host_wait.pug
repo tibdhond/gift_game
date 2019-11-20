@@ -18,18 +18,22 @@ block content
         let ws = new WebSocket(HOST);
         ws.onmessage = function (msg) {
             console.log(msg.data);
-            let ratio = msg.data;
-            document.getElementById("ratio").innerText = ratio;
-            let bar = document.getElementById("bar");
-            bar.innerText = ratio;
-            bar.style = 'width:'+ratio;
-            if (ratio === "100%") {
-                const sleep = function(milliseconds) {
-                    return new Promise(function(resolve) { setTimeout(resolve, milliseconds) });
+            if(msg.data !== "new person") {
+                let ratio = msg.data;
+                document.getElementById("ratio").innerText = ratio;
+                let bar = document.getElementById("bar");
+                bar.innerText = ratio;
+                bar.style = 'width:' + ratio;
+                if (ratio === "100%") {
+                    const sleep = function (milliseconds) {
+                        return new Promise(function (resolve) {
+                            setTimeout(resolve, milliseconds)
+                        });
+                    }
+                    sleep(2000).then(function () {
+                        ws.close();
+                        window.location.reload();
+                    });
                 }
-                sleep(2000).then(function() {
-                    ws.close();
-                    window.location.reload();
-                });
             }
         }
