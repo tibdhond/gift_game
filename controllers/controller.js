@@ -26,6 +26,7 @@ let state = {
 };
 
 let rm_pc = false;
+let self_vote = true;
 
 let error = "";
 
@@ -136,6 +137,7 @@ exports.person_list = function (req, res) {
 
 exports.start = function (req, res) {
     rm_pc = req.body.rm_pc !== undefined;
+    self_vote = req.body.self_vote !== undefined;
     if(req.body.load !== undefined) {
         let oldState = undefined;
         fs.readFile("gameState.json", (err, data) => {
@@ -286,8 +288,9 @@ exports.scoreboard = function (req, res) {
         res.redirect("/people");
     }
     else {
+        let length = Object.keys(state.people).length;
         res.render("host_views/scoreboard.pug", {votes: state.votes, people: state.people, rm_pc: rm_pc,
-                                        length: Object.keys(state.people).length});
+                                        length: self_vote ? length : length - 1});
     }
 };
 
@@ -364,7 +367,9 @@ exports.vote_post = function (req, res) {
                 }
                 else {  // gift claimed successfully
                     state.rounds[state.round].setOwner(req.cookies["id"]);
-                    state.votes[req.cookies["id"]] += 1;
+                    if(self_vote) { // Don't show self vote in scoreboard
+                        state.votes[req.cookies["id"]] += 1;
+                    }
                     if(state.people[req.cookies["id"]].rounds.length === state.round+1) {
                         // last round was invalid and has restarted; existing gift may be invalid
                         state.people[req.cookies["id"]].rounds[state.round] = req.body.person;

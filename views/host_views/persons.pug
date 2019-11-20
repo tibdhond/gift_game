@@ -22,6 +22,10 @@ block content
                         input#rm_pc(type='checkbox', name='rm_pc' autocomplete='off', style="float:right")
                         |  Verwijder spelers
                 .btn-group-toggle(data-toggle='buttons', style="float:right")
+                    label.btn.btn-white.active
+                        input#self_vote(type='checkbox', name='self_vote' autocomplete='off', style="float:right")
+                        |  Zelf stem
+                .btn-group-toggle(data-toggle='buttons', style="float:right")
                     label.btn.btn-white
                         input#load(type='checkbox', name='load' autocomplete='off', style="float:right")
                         |  Speel verder
