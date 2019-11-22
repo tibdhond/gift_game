@@ -1,12 +1,9 @@
 const os = require( 'os' );
 const fs = require('fs');
 const networkInterfaces = os.networkInterfaces( );
-let address = undefined;
+let address = 'localhost';
 
-if(networkInterfaces['Wi-Fi'] === undefined) {
-    address = undefined;
-}
-else {
+if(networkInterfaces['Wi-Fi'] !== undefined) {
     networkInterfaces['Wi-Fi'].forEach(info => {
         if (info.family === 'IPv4') {
             address = info.address;
