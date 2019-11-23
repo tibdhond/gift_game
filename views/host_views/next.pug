@@ -1,31 +1,28 @@
 extends ../layout
 
 block content
-    .container
+    .container#container
         h1 Volgende cadeau
         br
         form(method='POST' action='/gift')
             .form-row
-                .form-group.col-md-6
+                .form-group.col-md-6#bqlk
                     .field
                         if complete
                             h4 #{gift}
                         else
                             input#title.form-control(type='text', name='gift', placeholder="")
             .form-row
-                .form-group.col-md-10
+                .div.knoppebn
                     if complete
                         .btn-group-toggle(data-toggle='buttons' style="float:right")
-                            label.btn.btn-secondary.active
+                            label#left.btn.btn-secondary.active
                                 input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
                                 |  Willeukeurig cadeau
                     else
-                        .btn-group-toggle(data-toggle='buttons', style="float:right")
-                            label.btn.btn-secondary
-                                input#rTrue(type='checkbox', name='rTrue' autocomplete='off', style="float:right")
+                        .btn-group-toggle(data-toggle='buttons')
+                            label.btn.btn-white
+                                input#rTrue(type='checkbox', name='rTrue' autocomplete='off')
                                 |  Willeukeurig cadeau
-            .form-row
-                br
-            .form-row
-                .form-group.col-md-10
-                    button.btn.btn-primary(type='submit' style="float:right") Volgende stemronde
+
+                    button.btn.btn-primary(type='submit') Volgende stemronde

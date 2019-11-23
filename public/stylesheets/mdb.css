@@ -4546,7 +4546,7 @@ a.waves-effect, a.waves-light {
   margin: 0.375rem;
   border: 0;
   -webkit-border-radius: 0.125rem;
-  border-radius: 0.125rem;
+  border-radius: 5px;
   cursor: pointer;
   text-transform: uppercase;
   white-space: normal;

@@ -116,3 +116,24 @@ h2 {
 .filler-span {
     flex: auto;
 }
+
+
+#left{
+
+}
+
+#container{
+  margin: 0 auto;
+  text-align: center;
+}
+
+#bqlk {
+  margin: 0 auto;
+  padding-bottom: 2%;
+}
+
+.knoppebn{
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row-reverse;
+}
