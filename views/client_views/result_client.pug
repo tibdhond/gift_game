@@ -4,13 +4,13 @@ block content
     table.table.table-striped
         thead
             tr
-                th(scope='col') Round
-                th(scope='col') Gift
-                th(scope='col') Your answer
-                th(scope='col') Right answer
+                th(scope='col') Ronde
+                th(scope='col') Cadeau
+                th(scope='col') Jouw antwoord
+                th(scope='col') Juiste antwoord
         tbody
             each gift, i in rounds
-                if person.rounds[i] === "mine"
+                if person.rounds[i] === "Mijn cadeau"
                     tr.bg-info
                         th(scope='row') #{i}
                         td #{gift.description}

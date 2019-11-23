@@ -125,7 +125,7 @@ exports.person_list = function (req, res) {
         server = true;
     }
     else if("server" in req.cookies) {
-        res.render("host_views/persons.pug", {persons: state.people})
+        res.render("host_views/persons.pug", {ip: address, persons: state.people})
     }
     else {
         res.redirect("/");
@@ -356,7 +356,7 @@ exports.vote_post = function (req, res) {
             res.redirect("/waiting_room");
         }
         else {      // Person is allowed to vote
-            if (req.body.person.toString() === "mine") {        // Person has claimed the gift
+            if (req.body.person.toString() === "Mijn cadeau") {        // Person has claimed the gift
                 if(state.rounds[state.round].owner !== undefined && state.rounds[state.round].owner !== req.cookies["id"]) {    // gift already claimed
                     error = "Meerdere mensen hebben het cadeau opgeëist, de ronde begint opnieuw.";
                     // Errors can only be handled at the end of the round
