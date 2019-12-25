@@ -65,6 +65,7 @@ exports.host_socket = function(ws, req) {
         socket.send("finished")
     });
     ws.on('close', () => {
+        console.log("Closing host");
         hostSocket = undefined;
     })
 };
@@ -87,7 +88,7 @@ exports.login = function (req, res) {
     if('id' in req.cookies) {
         if (!(req.cookies["id"] in state.people)) {
             state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
-            if (hostSocket === undefined) {
+            if (hostSocket === undefined || hostSocket.readyState === 3 || hostSocket.readyState === 2) {
                 res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
                 return;
             }
@@ -140,9 +141,9 @@ exports.start = function (req, res) {
         let oldState = undefined;
         fs.readFile("gameState.json", (err, data) => {
             if(err) throw err; oldState = data;
-            console.log(`Old state: ${oldState}`);
+            // console.log(`Old state: ${oldState}`);
             state = JSON.parse(oldState);
-            console.log(`New state: ${state}`);
+            // console.log(`New state: ${state}`);
             res.redirect("/gift")
         });
     }
@@ -158,23 +159,26 @@ exports.person_delete = function(req, res) {
 };
 
 exports.next_gift = function (req, res) {
-    console.log(state.gifts);
-    console.log(state.rounds);
-    console.log(state.round);
+    // console.log(state.gifts);
+    // console.log(state.rounds);
+    // console.log(state.round);
     console.log(state.complete);
     if (!server) {
         res.redirect("/people");
     }
     else {
         fs.writeFile("gameState.json", JSON.stringify(state), err => {if(err) throw err});
-        if (state.complete && state.rounds.length === state.round + 1) { // All gifts are known
+        if (state.complete && (state.rounds.length === state.round + 1)) { // All gifts are known
             if (state.gifts.length > 0) {  // Pick a random gift
                 let index = 0;
                 if (state.gifts.length > 1) {
                     let z = (2 / (state.gifts.length - 1)) / state.gifts.length;    // Custom distribution where smaller numbers have higher chance
-                    index = state.gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
+                    while(index >= state.gifts.length - 1) {
+                        index = state.gifts.length - 1 - (Math.floor(1 / 2 + Math.sqrt(8 * Math.random() + z) / (2 * Math.sqrt(z))));
+                    }
                 }
                 state.rounds.push(state.gifts[index]);  // Set gift to be used in current round
+                console.log(`next gift: ${state.rounds[state.rounds.length-1]}`);
                 state.gifts.splice(index, 1); // Presents in use are removed from list
                 res.render("host_views/next.pug", {gift: state.rounds[state.round + 1].description.toString(), complete: state.complete});
             } else {  // Game has ended
@@ -182,7 +186,7 @@ exports.next_gift = function (req, res) {
             }
         } else {  // Should only be called on a refresh (gift already selected)
             res.render("host_views/next.pug", {
-                gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round].description.toString(),
+                gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round+1].description.toString(),
                 complete: state.complete
             });
         }
@@ -197,8 +201,6 @@ exports.new_gift = function (req, res) {
     else {
         if(req.body.rTrue !== undefined) {
             state.complete = true;
-            res.redirect('/gift');
-            return;
         }
     }
 
@@ -273,11 +275,12 @@ exports.host_wait = function (req, res) {
         }
         return;
     }
+    console.log(`rounds length: ${state.rounds.length}, current round ${state.round}`);
     res.render("host_views/host_wait.pug", {
         voted: state.voted,
         length: Object.keys(state.people).length,
         ratio: "" + (Math.floor(state.voted * 100 / Object.keys(state.people).length)) + "%",
-        gift: state.rounds[state.round].description
+        gift: state.rounds[state.round].description.toString()
     });
 };
 
@@ -322,6 +325,13 @@ exports.wait = function (req, res) {
 };
 
 exports.vote_get = function (req, res) {
+    if (hostSocket === undefined || hostSocket.readyState === 3 || hostSocket.readyState === 2) {
+        res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
+        return;
+    }
+    else {
+        console.log(`Hostsocket status is ${hostSocket.readyState}`)
+    }
     if(!("id" in req.cookies)) {    // Person hasn't logged in yet
         res.redirect("/login");
     }
