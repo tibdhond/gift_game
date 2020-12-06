@@ -223,9 +223,6 @@ exports.new_gift = function (req, res) {
     }
 
     state.round += 1;
-    connects.forEach(socket => {
-        socket.send("finished")
-    });
     console.log(state.votes);
 
     res.redirect("/host_wait");
@@ -278,6 +275,10 @@ exports.host_wait = function (req, res) {
         return;
     }
     console.log(`rounds length: ${state.rounds.length}, current round ${state.round}`);
+
+    connects.forEach(socket => {
+        socket.send("finished")
+    });
     res.render("host_views/host_wait.pug", {
         voted: state.voted,
         length: Object.keys(state.people).length,
