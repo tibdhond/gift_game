@@ -11,7 +11,7 @@ block script
         ws.onmessage = function (msg) {
             console.log(msg.data);
             if (msg.data === "finished") {
-                ws.close();
+                // ws.close();
                 window.location.reload();
             }
         }
