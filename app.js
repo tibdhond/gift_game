@@ -7,21 +7,9 @@ let cookieParser = require('cookie-parser');
 let logger = require('morgan');
 
 let os = require( 'os' );
-let networkInterfaces = os.networkInterfaces( );
-let address = undefined;
 
-if(networkInterfaces['Wi-Fi'] === undefined) {
-  address = "localhost";
-}
-else {
-  networkInterfaces['Wi-Fi'].forEach(info => {
-    if (info.family === 'IPv4') {
-      address = info.address;
-    }
-  });
-}
-
-const port = normalizePort(process.env.PORT || 80);
+const address = process.env.HOST;
+const port = process.env.PORT || 80;
 app.set('port', port);
 app.set('domain', address);
 const server = http.createServer(app);
