@@ -1,15 +1,8 @@
 const os = require( 'os' );
 const fs = require('fs');
 const networkInterfaces = os.networkInterfaces( );
-let address = 'localhost';
+let address = "https://present-game.herokuapp.com";
 
-if(networkInterfaces['Wi-Fi'] !== undefined) {
-    networkInterfaces['Wi-Fi'].forEach(info => {
-        if (info.family === 'IPv4') {
-            address = info.address;
-        }
-    });
-}
 
 let state = {
     people: {},
@@ -123,7 +116,12 @@ exports.newPerson = function (req, res) {
 
 exports.person_list = function (req, res) {
     if(!server) {
-        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug", {ip: address, persons: state.people});
+        res.cookie("server", true, {maxAge : 24 * 3600000}).render("host_views/persons.pug",
+            {
+                ip: address,
+                persons: state.people
+            }
+        );
         server = true;
     }
     else if("server" in req.cookies) {
