@@ -1,6 +1,5 @@
 const os = require( 'os' );
 const fs = require('fs');
-const networkInterfaces = os.networkInterfaces( );
 let address = "https://present-game.herokuapp.com";
 
 
@@ -60,7 +59,7 @@ exports.host_socket = function(ws, req) {
     ws.on('close', () => {
         console.log("Closing host");
         hostSocket = undefined;
-    })
+    });
 };
 
 exports.newSocket = function(ws, req) {
@@ -97,10 +96,11 @@ exports.login = function (req, res) {
 };
 
 exports.newPerson = function (req, res) {
-    if (!(req.body.Name.toString() in state.people)) {
-        state.people[req.body.Name.toString()] = new Player(req.body.Name.toString());
-        state.votes[req.body.Name.toString()] = 0;
-        if (hostSocket === undefined) {
+    let name = 'id' in req.cookies ? req.cookies["id"] : req.body.Name.toString();
+    if (!(name in state.people)) {
+        state.people[name] = new Player(name);
+        state.votes[name] = 0;
+        if (hostSocket === undefined || hostSocket.readyState === 3 || hostSocket.readyState === 2) {
             res.render("client_views/host_not_ready", {message: "De host is nog niet klaar, gelieve even te wachten."});
             return;
         }
@@ -110,6 +110,9 @@ exports.newPerson = function (req, res) {
         res.cookie("id", req.body.Name.toString(), {maxAge : 24 * 3600000}).redirect("/waiting_room"); // 2 days
     }
     else {
+        if ('id' in req.cookies) {
+            res.redirect("/waiting_room");
+        }
         res.render("client_views/login.pug", {taken: true, nick: req.body.Name.toString()})
     }
 };
