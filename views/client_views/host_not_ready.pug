@@ -2,3 +2,8 @@ extends ../client
 
 block content
     h1= message
+
+    script.
+        setTimeout(() => {
+            window.location.reload();
+        }, 5000);
