@@ -261,6 +261,10 @@ exports.host_wait = function (req, res) {
         res.redirect("/people");
         return;
     }
+
+    connects.forEach(socket => {
+        socket.send("finished")
+    });
     if (state.voted === Object.keys(state.people).length) {
         if (state.rounds[state.round].owner === undefined && error === "") {
             error = "Niemand heeft het cadeau opgeëist, de ronde begint opnieuw."
@@ -276,9 +280,6 @@ exports.host_wait = function (req, res) {
     }
     console.log(`rounds length: ${state.rounds.length}, current round ${state.round}`);
 
-    connects.forEach(socket => {
-        socket.send("finished")
-    });
     res.render("host_views/host_wait.pug", {
         voted: state.voted,
         length: Object.keys(state.people).length,
