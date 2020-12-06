@@ -137,6 +137,7 @@ exports.person_list = function (req, res) {
 };
 
 exports.start = function (req, res) {
+    console.log("Settings: " + JSON.stringify(req.body));
     rm_pc = req.body.rm_pc !== undefined;
     self_vote = req.body.self_vote !== undefined;
     if(req.body.load !== undefined) {
