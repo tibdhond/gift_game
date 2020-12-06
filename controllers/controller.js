@@ -77,6 +77,7 @@ exports.home = function(req, res) {
 };
 
 exports.login = function (req, res) {
+    console.log(req.cookies);
     if('id' in req.cookies) {
         if (!(req.cookies["id"] in state.people)) {
             state.people[req.cookies["id"]] = new Player(req.cookies["id"]);
