@@ -31,9 +31,13 @@ let connects = [];
 const gifs = ["banana", "ferret", "spongebob", "koala", "dog", "turtle", "unicorn", "computer", "parrot", "minecraft"];
 
 class Gift {
-    constructor(description) {
-        this.description = description;
-        this.owner = undefined;
+    constructor(description, obj) {
+        if (obj) {
+            obj && Object.assign(this, obj);
+        } else {
+            this.description = description;
+            this.owner = undefined;
+        }
     }
 
     setOwner(owner) {
@@ -42,14 +46,18 @@ class Gift {
 }
 
 class Player {
-    constructor(name) {
-        this.name = name;
-        this.round = -1;
-        this.playing = true;
-        this.notcurrent = true;
-        this.rounds = [];
-        this.right = 0;
-        this.my_votes = 0;
+    constructor(name, obj) {
+        if (obj) {
+            obj && Object.assign(this, obj);
+        } else {
+            this.name = name;
+            this.round = -1;
+            this.playing = true;
+            this.notcurrent = true;
+            this.rounds = [];
+            this.right = 0;
+            this.my_votes = 0;
+        }
     }
 }
 
@@ -148,6 +156,10 @@ exports.start = function (req, res) {
             if(err) throw err; oldState = data;
             // console.log(`Old state: ${oldState}`);
             state = JSON.parse(oldState);
+            state.rounds = state.rounds.map(e => new Gift(null, e));
+            for (const [key, value] of Object.entries(state.people)) {
+                state.people[key] = new Player(null, value);
+            }
             // console.log(`New state: ${state}`);
             res.redirect("/gift")
         });
