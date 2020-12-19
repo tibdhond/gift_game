@@ -1,5 +1,6 @@
 const os = require( 'os' );
 const fs = require('fs');
+const serveIndex = require('serve-index');
 let address = "https://present-game.herokuapp.com";
 
 
@@ -473,3 +474,7 @@ exports.host_result = function(req, res) {
 exports.client_result = function(req, res) {
     res.render("client_views/result_client", {rounds: state.rounds, person: state.people[req.cookies["id"]]});
 };
+
+exports.images = function(req, res) {
+    res.render("host_views/images", {images: serveIndex(path.join(__dirname, 'present images'), {})});
+}
