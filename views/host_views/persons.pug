@@ -11,7 +11,7 @@ block content
                             i.material-icons.md-icon-48 person
                             h5.card-title #{person.name}
                             form(method='POST' action='/people/delete/people')
-                                button.btn.btn-danger(type='submit' style="float:right", name="person", value=person) Verwijder
+                                button.btn.btn-danger(type='submit' style="float:right", name="person", value=person.name) Verwijder
             else
                 p Er zijn nog geen mensen.
 
