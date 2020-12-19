@@ -477,5 +477,5 @@ exports.client_result = function(req, res) {
 };
 
 exports.images = function(req, res) {
-    res.render("host_views/images", {images: serveIndex(path.join(__dirname, 'present images'), {})});
+    res.render("host_views/images", {images: fs.readdirSync('present images')});
 }
