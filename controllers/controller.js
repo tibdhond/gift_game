@@ -204,7 +204,6 @@ exports.next_gift = function (req, res) {
             }
         } else {  // Should only be called on a refresh (gift already selected)
             console.log('second if');
-            console.log('second if');
             res.render("host_views/next.pug", {
                 gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round+1].description.toString(),
                 complete: state.complete
@@ -453,13 +452,13 @@ exports.invalid = function (req, res) {
 exports.host_result = function(req, res) {
 
     // Uncomment for testing
-    for (let i=0; i < 10; i++) {
-        state.people["person"+i] = new Player("person"+i);
-        state.people["person"+i].right = Math.floor(Math.random() * 50);
-        state.people["person"+i].my_votes = Math.floor(Math.random() * 5);
-    }
+    // for (let i=0; i < 10; i++) {
+    //     state.people["person"+i] = new Player("person"+i);
+    //     state.people["person"+i].right = Math.floor(Math.random() * 50);
+    //     state.people["person"+i].my_votes = Math.floor(Math.random() * 5);
+    // }
 
-    /*
+
     for(let key in state.people) {
         if (state.people.hasOwnProperty(key)) {
             for (let i = 0; i < state.rounds.length; i++) {
@@ -475,8 +474,6 @@ exports.host_result = function(req, res) {
             }
         }
     }
-
-     */
 
     state.finished = true;
 
