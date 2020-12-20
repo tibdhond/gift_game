@@ -187,7 +187,7 @@ exports.next_gift = function (req, res) {
         fs.writeFile("gameState.json", JSON.stringify(state), err => {if(err) throw err});
         if (state.complete && (state.rounds.length === state.round + 1)) { // All gifts are known
             if (state.gifts.length > 0) {  // Pick a random gift
-                console.log(state.gifts.toString());
+                console.log(`Gifts: ${state.gifts}`);
                 let index = 0;
                 if (state.gifts.length > 1) {
                     let z = (2 / (state.gifts.length - 1)) / state.gifts.length;    // Custom distribution where smaller numbers have higher chance
@@ -203,6 +203,8 @@ exports.next_gift = function (req, res) {
                 res.redirect("/host_result");
             }
         } else {  // Should only be called on a refresh (gift already selected)
+            console.log('second if');
+            console.log('second if');
             res.render("host_views/next.pug", {
                 gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round+1].description.toString(),
                 complete: state.complete
