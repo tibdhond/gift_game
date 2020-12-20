@@ -456,28 +456,28 @@ exports.invalid = function (req, res) {
 exports.host_result = function(req, res) {
 
     // Uncomment for testing
-    // for (let i=0; i < 10; i++) {
-    //     state.people["person"+i] = new Player("person"+i);
-    //     state.people["person"+i].right = Math.floor(Math.random() * 50);
-    //     state.people["person"+i].my_votes = Math.floor(Math.random() * 5);
-    // }
-
-
-    for(let key in state.people) {
-        if (state.people.hasOwnProperty(key)) {
-            for (let i = 0; i < state.rounds.length; i++) {
-                let person = state.people[key];
-                if (person.rounds[i] === state.rounds[i].owner) {
-                    console.log(person.rounds[i]);
-                    console.log(state.rounds[i].owner);
-                    state.people[key].right++;
-                }
-                else if (person.rounds[i] === "Mijn cadeau") {
-                    state.people[key].my_votes++;
-                }
-            }
-        }
+    for (let i=0; i < 10; i++) {
+        state.people["person"+i] = new Player("person"+i);
+        state.people["person"+i].right = Math.floor(Math.random() * 50);
+        state.people["person"+i].my_votes = Math.floor(Math.random() * 5);
     }
+
+
+    // for(let key in state.people) {
+    //     if (state.people.hasOwnProperty(key)) {
+    //         for (let i = 0; i < state.rounds.length; i++) {
+    //             let person = state.people[key];
+    //             if (person.rounds[i] === state.rounds[i].owner) {
+    //                 console.log(person.rounds[i]);
+    //                 console.log(state.rounds[i].owner);
+    //                 state.people[key].right++;
+    //             }
+    //             else if (person.rounds[i] === "Mijn cadeau") {
+    //                 state.people[key].my_votes++;
+    //             }
+    //         }
+    //     }
+    // }
 
     state.finished = true;
 

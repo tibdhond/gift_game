@@ -21,26 +21,10 @@ block script
             names.push(person.name);
             votes.push(person.right);
             my_votes.push(person.my_votes);
-            let temp = Math.floor(Math.random() * 255);
-            let color1 = 'rgba(' + temp;
-            let color2 = 'rgba(' + temp;
-            let color3 = `rgba(${temp * (100 + gradient) / 100}`;
-            let color4 = `rgba(${temp * (100 + gradient) / 100}`;
-            temp = Math.floor(Math.random() * 255);
-            color1 += ", " + temp;
-            color2 += ", " + temp;
-            color3 += `, ${temp * (100 + gradient) / 100}`;
-            color4 += `, ${temp * (100 + gradient) / 100}`;
-            temp = Math.floor(Math.random() * 255);
-            color1 += ", " + temp + ", 0.2)";
-            color2 += ", " + temp + ", 1)";
-            color3 += `, ${temp * (100 + gradient) / 100}, 0.2`;
-            color4 += `, ${temp * (100 + gradient) / 100}, 1`;
-
-            colors1.push(color1);
-            colors2.push(color2);
-            colors3.push(color3);
-            colors4.push(color4)
+            colors1.push('rgba(200, 0, 0, 0');
+            colors2.push('rgba(255, 0, 0, 0');
+            colors3.push('rgba(0, 200, 0, 0');
+            colors4.push('rgba(0, 255, 0, 0');
             console.log(colors3);
         }
         let myBarChart = new Chart(ctxB, {
