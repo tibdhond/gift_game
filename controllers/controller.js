@@ -187,6 +187,7 @@ exports.next_gift = function (req, res) {
         fs.writeFile("gameState.json", JSON.stringify(state), err => {if(err) throw err});
         if (state.complete && (state.rounds.length === state.round + 1)) { // All gifts are known
             if (state.gifts.length > 0) {  // Pick a random gift
+                console.log(state.gifts.toString());
                 let index = 0;
                 if (state.gifts.length > 1) {
                     let z = (2 / (state.gifts.length - 1)) / state.gifts.length;    // Custom distribution where smaller numbers have higher chance
