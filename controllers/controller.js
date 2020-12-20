@@ -204,7 +204,7 @@ exports.next_gift = function (req, res) {
             }
         } else {  // Should only be called on a refresh (gift already selected)
             console.log('second if');
-            if (state.rounds[state.round+1]) {
+            if (!complete || state.rounds[state.round+1]) {
                 res.render("host_views/next.pug", {
                     gift: state.rounds.length === state.round + 1 ? "" : state.rounds[state.round+1].description.toString(),
                     complete: state.complete
