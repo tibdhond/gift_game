@@ -37,3 +37,10 @@ block content
                 }
             }
         }
+        while (true) {
+            setTimeout(() => {
+                ws.send('alive');
+            }, 5000);
+        }
+
+}
