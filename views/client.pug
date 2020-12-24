@@ -15,10 +15,3 @@ block script
                 window.location.reload();
             }
         }
-
-        while (true) {
-            setTimeout(() => {
-                ws.send('alive');
-            }, 5000);
-        }
-
