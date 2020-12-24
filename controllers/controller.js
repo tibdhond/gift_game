@@ -217,7 +217,7 @@ exports.next_gift = function (req, res) {
 };
 
 exports.new_gift = function (req, res) {
-    if(req.body.gift !== '') {
+    if(req.body.gift !== undefined && req.body.gift !== '') {
         state.rounds.push(new Gift(req.body.gift));
         state.complete = state.complete || req.body.rTrue !== undefined;
     }
