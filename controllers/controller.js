@@ -2,7 +2,23 @@ const os = require( 'os' );
 const fs = require('fs');
 const path = require('path');
 const serveIndex = require('serve-index');
-let address = "https://present-game.herokuapp.com";
+const networkInterfaces = os.networkInterfaces( );
+console.log(networkInterfaces)
+let address = "localhost";
+
+if(networkInterfaces['Wi-Fi'] !== undefined) {
+    networkInterfaces['Wi-Fi'].forEach(info => {
+        if (info.family === 'IPv4') {
+            address = info.address;
+        }
+    });
+} else {
+    let network = Object.keys(networkInterfaces).find(interface => interface.toLocaleLowerCase().includes('ethernet'));
+    if (network) {
+        let subnet = networkInterfaces[network].find(net => net.family === 'IPv4');
+        address = subnet?.address ?? address;
+    }
+}
 
 
 let state = {
